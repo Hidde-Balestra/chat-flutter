@@ -23,6 +23,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   List<MessageRecord> _messages = [];
+  String? _displayName;
   final _controller = TextEditingController();
   Timer? _pollTimer;
   bool _sending = false;
@@ -31,7 +32,14 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     _refresh();
+    _loadContact();
     _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _poll());
+  }
+
+  Future<void> _loadContact() async {
+    final contact = await widget.store.getContact(widget.contactAccountId);
+    if (!mounted) return;
+    setState(() => _displayName = contact?.displayName);
   }
 
   @override
@@ -49,7 +57,14 @@ class _ChatPageState extends State<ChatPage> {
     // race and already save the message before this one even runs; relying
     // on our own "did I just receive something" result then means we never
     // refresh even though the store already has the new message.
-    await widget.sessionManager.pollAndDecrypt();
+    if (!await widget.sessionManager.ensureBootstrapped()) {
+      return; // still offline — try again next tick
+    }
+    try {
+      await widget.sessionManager.pollAndDecrypt();
+    } catch (_) {
+      // transient network error — just retry on the next tick
+    }
     await _refresh();
   }
 
@@ -82,7 +97,9 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_shorten(widget.contactAccountId))),
+      appBar: AppBar(
+        title: Text(_displayName ?? _shorten(widget.contactAccountId)),
+      ),
       body: Column(
         children: [
           Expanded(

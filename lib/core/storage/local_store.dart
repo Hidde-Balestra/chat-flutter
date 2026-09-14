@@ -34,7 +34,17 @@ class MessageRecord {
 abstract class LocalStore {
   Future<void> upsertContact(String accountId, {String? displayName});
 
+  /// Sets (or clears, with null) the local nickname for a contact. Unlike
+  /// [upsertContact] — where a null [displayName] means "don't touch it" —
+  /// here null explicitly clears it back to showing the raw account id.
+  /// This name is purely local: it's never sent to the server or to the
+  /// contact, and lives in the same SQLCipher-encrypted database as
+  /// everything else.
+  Future<void> setDisplayName(String accountId, String? displayName);
+
   Future<List<ContactRecord>> listContacts();
+
+  Future<ContactRecord?> getContact(String accountId);
 
   Future<void> saveMessage({
     required String contactId,

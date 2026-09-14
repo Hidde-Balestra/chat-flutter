@@ -38,12 +38,47 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), contactId);
+      await tester.enterText(find.byType(TextField).first, contactId);
       await tester.tap(find.text('Toevoegen'));
       await tester.pumpAndSettle();
 
       expect(find.byType(ChatPage), findsOneWidget);
       expect(await store.listContacts(), hasLength(1));
+    });
+
+    testWidgets(
+        'a contact can be given a local name, shown instead of the account id',
+        (tester) async {
+      final server = FakeServer();
+      final store = InMemoryLocalStore();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: store,
+      );
+      final contact = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      await contact.bootstrap();
+      final contactId = await contact.accountId;
+      await store.upsertContact(contactId);
+
+      await tester.pumpWidget(
+          MaterialApp(home: ContactsPage(sessionManager: me, store: store)));
+      await tester.pump();
+
+      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Bob');
+      await tester.tap(find.text('Opslaan'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bob'), findsOneWidget);
+      expect((await store.getContact(contactId))?.displayName, 'Bob');
     });
 
     testWidgets('shows your own account id in a dialog', (tester) async {

@@ -224,6 +224,18 @@ class InMemoryLocalStore implements LocalStore {
   }
 
   @override
+  Future<void> setDisplayName(String accountId, String? displayName) async {
+    final existing = _contacts[accountId];
+    if (existing == null) return;
+    _contacts[accountId] =
+        ContactRecord(accountId: accountId, displayName: displayName);
+  }
+
+  @override
+  Future<ContactRecord?> getContact(String accountId) async =>
+      _contacts[accountId];
+
+  @override
   Future<List<ContactRecord>> listContacts() async => _contacts.values.toList();
 
   @override

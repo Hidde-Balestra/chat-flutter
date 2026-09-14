@@ -40,6 +40,33 @@ class SqliteLocalStore implements LocalStore {
   }
 
   @override
+  Future<void> setDisplayName(String accountId, String? displayName) async {
+    await _db.raw.update(
+      'contacts',
+      {'display_name': displayName},
+      where: 'account_id = ?',
+      whereArgs: [accountId],
+    );
+  }
+
+  @override
+  Future<ContactRecord?> getContact(String accountId) async {
+    final rows = await _db.raw.query(
+      'contacts',
+      where: 'account_id = ?',
+      whereArgs: [accountId],
+      limit: 1,
+    );
+    if (rows.isEmpty) {
+      return null;
+    }
+    return ContactRecord(
+      accountId: rows.first['account_id'] as String,
+      displayName: rows.first['display_name'] as String?,
+    );
+  }
+
+  @override
   Future<List<ContactRecord>> listContacts() async {
     final rows = await _db.raw.query('contacts', orderBy: 'added_at DESC');
     return rows

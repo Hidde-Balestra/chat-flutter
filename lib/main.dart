@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'app_config.dart';
@@ -31,8 +33,12 @@ class PrivacyChatApp extends StatelessWidget {
 }
 
 /// The entire onboarding flow, by design: no form, no phone number, no
-/// e-mail. Generates (or loads) a local identity, publishes prekeys, logs
-/// in, and lands straight on the contacts list.
+/// e-mail. Generates (or loads) a local identity and lands straight on the
+/// contacts list — which always works offline, since contacts and message
+/// history live entirely in the local (encrypted) database. Registering
+/// with the backend happens separately in the background and is retried
+/// automatically whenever the app polls, so a missing connection at launch
+/// never blocks access to anything already on the device.
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
 
@@ -41,22 +47,28 @@ class StartupPage extends StatefulWidget {
 }
 
 class _StartupPageState extends State<StartupPage> {
-  Future<_Session>? _bootstrap;
+  Future<_Session>? _prepare;
 
   @override
   void initState() {
     super.initState();
-    _bootstrap = _bootstrapSession();
+    _prepare = _prepareSession();
   }
 
-  Future<_Session> _bootstrapSession() async {
+  Future<_Session> _prepareSession() async {
     final identity = await SecureIdentityStore().loadOrCreate();
     final database = await AppDatabase.open();
     final store = SqliteLocalStore(database);
     final backend = HttpChatBackend(baseUrl: Uri.parse(backendBaseUrl));
     final sessionManager =
         SessionManager(identity: identity, backend: backend, store: store);
-    await sessionManager.bootstrap();
+
+    // Best-effort, non-blocking: if there's no connection right now, the UI
+    // below still opens normally with whatever is already stored locally.
+    // ContactsPage/ChatPage retry this on every poll tick, so it recovers
+    // automatically once connectivity returns.
+    unawaited(sessionManager.ensureBootstrapped());
+
     return _Session(sessionManager: sessionManager, store: store);
   }
 
@@ -64,7 +76,7 @@ class _StartupPageState extends State<StartupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder<_Session>(
-        future: _bootstrap,
+        future: _prepare,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(
@@ -79,9 +91,13 @@ class _StartupPageState extends State<StartupPage> {
             );
           }
           if (snapshot.hasError) {
+            // Only a genuinely local failure lands here now (e.g. the
+            // on-device database couldn't be opened) — there's no missing
+            // connection case left to show, since bootstrap() no longer
+            // blocks this future.
             return _StartupError(
               error: snapshot.error!,
-              onRetry: () => setState(() => _bootstrap = _bootstrapSession()),
+              onRetry: () => setState(() => _prepare = _prepareSession()),
             );
           }
           final session = snapshot.data!;
@@ -114,10 +130,10 @@ class _StartupError extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.cloud_off, size: 48),
+            const Icon(Icons.storage, size: 48),
             const SizedBox(height: 16),
             const Text(
-              'Kan geen verbinding maken met de server.',
+              'Kan de lokale, versleutelde opslag niet openen.',
               textAlign: TextAlign.center,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),

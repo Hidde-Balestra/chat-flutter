@@ -34,13 +34,37 @@ class SessionManager {
   final int oneTimePreKeyLowWaterMark;
 
   String? _accountId;
+  bool _isBootstrapped = false;
 
   Future<String> get accountId async =>
       _accountId ??= await _identity.accountId();
 
+  /// True once [bootstrap] has completed successfully at least once. Contacts
+  /// and message history are always readable from the local store regardless
+  /// — this only gates network actions (sending, polling).
+  bool get isBootstrapped => _isBootstrapped;
+
+  /// Retries [bootstrap] if it hasn't succeeded yet (e.g. the app launched
+  /// without a connection). A no-op once already bootstrapped. Returns
+  /// whether the session is bootstrapped after this call — safe to call on
+  /// every poll tick to transparently recover once connectivity returns.
+  Future<bool> ensureBootstrapped() async {
+    if (_isBootstrapped) {
+      return true;
+    }
+    try {
+      await bootstrap();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Publishes this device's prekeys (idempotent — safe on every launch) and
   /// logs in via the passwordless challenge/response flow. Call once at
-  /// startup before sending or polling.
+  /// startup before sending or polling. Throws if there's no connection —
+  /// callers that need the app to stay usable offline should use
+  /// [ensureBootstrapped] instead, which swallows that failure.
   Future<void> bootstrap() async {
     final id = await accountId;
 
@@ -63,6 +87,7 @@ class SessionManager {
     await _backend.verifyAuthChallenge(id, nonceSignature.bytes);
 
     await _replenishOneTimePreKeysIfNeeded();
+    _isBootstrapped = true;
   }
 
   Future<SignedPreKey> _generateAndStoreSignedPreKey() async {
