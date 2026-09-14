@@ -79,13 +79,15 @@ class SqliteLocalStore implements LocalStore {
               contactId: row['contact_id'] as String,
               direction: row['direction'] as String,
               body: row['body'] as String,
-              sentAt: DateTime.fromMillisecondsSinceEpoch(row['sent_at'] as int),
+              sentAt:
+                  DateTime.fromMillisecondsSinceEpoch(row['sent_at'] as int),
             ))
         .toList();
   }
 
   @override
-  Future<void> saveSession(String contactId, DoubleRatchetSession session) async {
+  Future<void> saveSession(
+      String contactId, DoubleRatchetSession session) async {
     final stateJson = jsonEncode(await session.toStorage());
     await _db.raw.insert(
       'ratchet_sessions',
@@ -105,7 +107,8 @@ class SqliteLocalStore implements LocalStore {
     if (rows.isEmpty) {
       return null;
     }
-    final json = jsonDecode(rows.first['state_json'] as String) as Map<String, dynamic>;
+    final json =
+        jsonDecode(rows.first['state_json'] as String) as Map<String, dynamic>;
     return DoubleRatchetSession.fromStorage(json);
   }
 
@@ -127,13 +130,14 @@ class SqliteLocalStore implements LocalStore {
 
   @override
   Future<SignedPreKey?> loadLatestSignedPreKey() async {
-    final rows = await _db.raw.query('own_signed_prekeys', orderBy: 'created_at DESC', limit: 1);
+    final rows = await _db.raw
+        .query('own_signed_prekeys', orderBy: 'created_at DESC', limit: 1);
     if (rows.isEmpty) {
       return null;
     }
     final row = rows.first;
-    final keyPair =
-        await CryptoAlgorithms.x25519.newKeyPairFromSeed(base64Decode(row['private_key'] as String));
+    final keyPair = await CryptoAlgorithms.x25519
+        .newKeyPairFromSeed(base64Decode(row['private_key'] as String));
     return SignedPreKey(id: row['id'] as int, keyPair: keyPair);
   }
 
@@ -168,7 +172,8 @@ class SqliteLocalStore implements LocalStore {
     if (rows.isEmpty) {
       return null;
     }
-    await _db.raw.update('own_one_time_prekeys', {'used': 1}, where: 'id = ?', whereArgs: [id]);
+    await _db.raw.update('own_one_time_prekeys', {'used': 1},
+        where: 'id = ?', whereArgs: [id]);
     final keyPair = await CryptoAlgorithms.x25519
         .newKeyPairFromSeed(base64Decode(rows.first['private_key'] as String));
     return OneTimePreKey(id: id, keyPair: keyPair);
@@ -176,8 +181,8 @@ class SqliteLocalStore implements LocalStore {
 
   @override
   Future<int> countUnusedOneTimePreKeys() async {
-    final result =
-        await _db.raw.rawQuery('SELECT COUNT(*) AS c FROM own_one_time_prekeys WHERE used = 0');
+    final result = await _db.raw.rawQuery(
+        'SELECT COUNT(*) AS c FROM own_one_time_prekeys WHERE used = 0');
     return Sqflite.firstIntValue(result) ?? 0;
   }
 }

@@ -72,7 +72,8 @@ class WireFormat {
     offset += 1;
     final oneTimePreKeyId = _readUint32be(bytes, offset);
     offset += 4;
-    final header = RatchetHeader.deserialize(bytes.sublist(offset, offset + _headerLength));
+    final header = RatchetHeader.deserialize(
+        bytes.sublist(offset, offset + _headerLength));
     offset += _headerLength;
     final ciphertext = bytes.sublist(offset);
 
@@ -106,7 +107,8 @@ class WireFormat {
   }
 
   static int _readUint32be(List<int> bytes, int offset) {
-    final data = ByteData.sublistView(Uint8List.fromList(bytes.sublist(offset, offset + 4)));
+    final data = ByteData.sublistView(
+        Uint8List.fromList(bytes.sublist(offset, offset + 4)));
     return data.getUint32(0, Endian.big);
   }
 }

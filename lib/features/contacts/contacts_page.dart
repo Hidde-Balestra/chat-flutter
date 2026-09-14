@@ -7,7 +7,8 @@ import '../../core/storage/local_store.dart';
 import '../chat/chat_page.dart';
 
 class ContactsPage extends StatefulWidget {
-  const ContactsPage({super.key, required this.sessionManager, required this.store});
+  const ContactsPage(
+      {super.key, required this.sessionManager, required this.store});
 
   final SessionManager sessionManager;
   final LocalStore store;
@@ -62,10 +63,13 @@ class _ContactsPageState extends State<ContactsPage> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Account ID van je contact'),
+          decoration:
+              const InputDecoration(hintText: 'Account ID van je contact'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuleren')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuleren')),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
             child: const Text('Toevoegen'),
@@ -102,7 +106,8 @@ class _ContactsPageState extends State<ContactsPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Deel dit met iemand om te kunnen chatten. Er zit geen persoonlijke data in.'),
+            const Text(
+                'Deel dit met iemand om te kunnen chatten. Er zit geen persoonlijke data in.'),
             const SizedBox(height: 12),
             SelectableText(
               _myAccountId ?? '…',
@@ -110,7 +115,11 @@ class _ContactsPageState extends State<ContactsPage> {
             ),
           ],
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Sluiten'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Sluiten'))
+        ],
       ),
     );
   }
@@ -144,7 +153,8 @@ class _ContactsPageState extends State<ContactsPage> {
                 final contact = _contacts[index];
                 return ListTile(
                   leading: const CircleAvatar(child: Icon(Icons.person)),
-                  title: Text(contact.displayName ?? _shorten(contact.accountId)),
+                  title:
+                      Text(contact.displayName ?? _shorten(contact.accountId)),
                   subtitle: Text(_shorten(contact.accountId)),
                   onTap: () => _openChat(contact.accountId),
                 );

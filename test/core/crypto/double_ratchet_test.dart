@@ -33,7 +33,8 @@ void main() {
       expect(String.fromCharCodes(plaintext), 'hello bob');
     });
 
-    test('conversation flows back and forth across several DH ratchet steps', () async {
+    test('conversation flows back and forth across several DH ratchet steps',
+        () async {
       final (alice, bob) = await freshPair();
 
       final m1 = await alice.encrypt('hi bob'.codeUnits);
@@ -49,7 +50,8 @@ void main() {
       expect(String.fromCharCodes(await alice.decrypt(m4)), 'great, you?');
     });
 
-    test('out-of-order delivery still decrypts via skipped message keys', () async {
+    test('out-of-order delivery still decrypts via skipped message keys',
+        () async {
       final (alice, bob) = await freshPair();
 
       final m1 = await alice.encrypt('one'.codeUnits);
@@ -61,7 +63,9 @@ void main() {
       expect(String.fromCharCodes(await bob.decrypt(m1)), 'one');
     });
 
-    test('messages stay readable across many ratchet steps in a long conversation', () async {
+    test(
+        'messages stay readable across many ratchet steps in a long conversation',
+        () async {
       final (alice, bob) = await freshPair();
       DoubleRatchetSession sender = alice;
       DoubleRatchetSession receiver = bob;
@@ -84,16 +88,20 @@ void main() {
       final m1 = await alice.encrypt('before restore'.codeUnits);
       expect(String.fromCharCodes(await bob.decrypt(m1)), 'before restore');
 
-      final restoredBob = await DoubleRatchetSession.fromStorage(await bob.toStorage());
+      final restoredBob =
+          await DoubleRatchetSession.fromStorage(await bob.toStorage());
 
       final m2 = await alice.encrypt('after restore'.codeUnits);
-      expect(String.fromCharCodes(await restoredBob.decrypt(m2)), 'after restore');
+      expect(
+          String.fromCharCodes(await restoredBob.decrypt(m2)), 'after restore');
 
       final m3 = await restoredBob.encrypt('reply after restore'.codeUnits);
-      expect(String.fromCharCodes(await alice.decrypt(m3)), 'reply after restore');
+      expect(
+          String.fromCharCodes(await alice.decrypt(m3)), 'reply after restore');
     });
 
-    test('a duplicate delivery of an already-processed message is rejected', () async {
+    test('a duplicate delivery of an already-processed message is rejected',
+        () async {
       final (alice, bob) = await freshPair();
       final message = await alice.encrypt('once'.codeUnits);
 
@@ -106,7 +114,8 @@ void main() {
       final message = await alice.encrypt('secret'.codeUnits);
       final mutated = [...message.ciphertext];
       mutated[0] = mutated[0] ^ 0xff;
-      final tampered = RatchetMessage(header: message.header, ciphertext: mutated);
+      final tampered =
+          RatchetMessage(header: message.header, ciphertext: mutated);
 
       expect(() => bob.decrypt(tampered), throwsA(anything));
     });

@@ -85,7 +85,8 @@ class FakeChatBackend implements ChatBackend {
   }) async {
     final ok = await CryptoAlgorithms.ed25519.verify(
       signedPreKey.bytes,
-      signature: Signature(signedPreKeySignature, publicKey: identitySigningKey),
+      signature:
+          Signature(signedPreKeySignature, publicKey: identitySigningKey),
     );
     if (!ok) {
       throw StateError('signed_prekey_sig does not match');
@@ -113,7 +114,8 @@ class FakeChatBackend implements ChatBackend {
   }
 
   @override
-  Future<void> verifyAuthChallenge(String accountId, List<int> signature) async {
+  Future<void> verifyAuthChallenge(
+      String accountId, List<int> signature) async {
     final nonce = _server.pendingChallenges.remove(accountId);
     if (nonce == null) {
       throw StateError('no pending challenge for this account_id');
@@ -130,7 +132,8 @@ class FakeChatBackend implements ChatBackend {
   }
 
   @override
-  Future<void> uploadOneTimePreKeys(Map<int, SimplePublicKey> prekeysById) async {
+  Future<void> uploadOneTimePreKeys(
+      Map<int, SimplePublicKey> prekeysById) async {
     _server.accounts[_authenticated]!.oneTimePreKeys.addAll(prekeysById);
   }
 
@@ -198,7 +201,8 @@ class FakeChatBackend implements ChatBackend {
 
   @override
   Future<void> ackEnvelopes(List<int> envelopeIds) async {
-    _server.mailbox.removeWhere((envelope) => envelopeIds.contains(envelope.id));
+    _server.mailbox
+        .removeWhere((envelope) => envelopeIds.contains(envelope.id));
   }
 }
 
@@ -243,12 +247,14 @@ class InMemoryLocalStore implements LocalStore {
       _messages.where((message) => message.contactId == contactId).toList();
 
   @override
-  Future<void> saveSession(String contactId, DoubleRatchetSession session) async {
+  Future<void> saveSession(
+      String contactId, DoubleRatchetSession session) async {
     _sessions[contactId] = session;
   }
 
   @override
-  Future<DoubleRatchetSession?> loadSession(String contactId) async => _sessions[contactId];
+  Future<DoubleRatchetSession?> loadSession(String contactId) async =>
+      _sessions[contactId];
 
   @override
   Future<void> saveOwnSignedPreKey(SignedPreKey key) async {
@@ -266,7 +272,8 @@ class InMemoryLocalStore implements LocalStore {
   }
 
   @override
-  Future<OneTimePreKey?> takeOneTimePreKeyById(int id) async => _oneTimePreKeys.remove(id);
+  Future<OneTimePreKey?> takeOneTimePreKeyById(int id) async =>
+      _oneTimePreKeys.remove(id);
 
   @override
   Future<int> countUnusedOneTimePreKeys() async => _oneTimePreKeys.length;

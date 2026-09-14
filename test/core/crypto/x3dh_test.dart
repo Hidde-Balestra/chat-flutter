@@ -8,7 +8,8 @@ Future<RemotePreKeyBundle> _publishBundle(
   SignedPreKey signedPreKey, {
   OneTimePreKey? oneTimePreKey,
 }) async {
-  final signature = await bob.sign((await signedPreKey.keyPair.extractPublicKey()).bytes);
+  final signature =
+      await bob.sign((await signedPreKey.keyPair.extractPublicKey()).bytes);
   return RemotePreKeyBundle(
     accountId: await bob.accountId(),
     identitySigningKey: await bob.signingPublicKey,
@@ -16,22 +17,28 @@ Future<RemotePreKeyBundle> _publishBundle(
     signedPreKey: await signedPreKey.keyPair.extractPublicKey(),
     signedPreKeySignature: signature.bytes,
     signedPreKeyId: signedPreKey.id,
-    oneTimePreKey: oneTimePreKey == null ? null : await oneTimePreKey.keyPair.extractPublicKey(),
+    oneTimePreKey: oneTimePreKey == null
+        ? null
+        : await oneTimePreKey.keyPair.extractPublicKey(),
     oneTimePreKeyId: oneTimePreKey?.id,
   );
 }
 
 void main() {
   group('X3dh', () {
-    test('initiator and responder derive the same shared secret (with one-time prekey)', () async {
+    test(
+        'initiator and responder derive the same shared secret (with one-time prekey)',
+        () async {
       final alice = await IdentityKeyPair.generateRandom();
       final bob = await IdentityKeyPair.generateRandom();
       final bobSignedPreKey = await SignedPreKey.generate(1);
       final bobOneTimePreKey = await OneTimePreKey.generate(7);
 
-      final bundle = await _publishBundle(bob, bobSignedPreKey, oneTimePreKey: bobOneTimePreKey);
+      final bundle = await _publishBundle(bob, bobSignedPreKey,
+          oneTimePreKey: bobOneTimePreKey);
 
-      final initiation = await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
+      final initiation =
+          await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
 
       final responderSecret = await X3dh.respond(
         localIdentity: bob,
@@ -52,7 +59,8 @@ void main() {
 
       final bundle = await _publishBundle(bob, bobSignedPreKey);
 
-      final initiation = await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
+      final initiation =
+          await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
 
       final responderSecret = await X3dh.respond(
         localIdentity: bob,
@@ -64,7 +72,8 @@ void main() {
       expect(initiation.sharedSecret, equals(responderSecret));
     });
 
-    test('rejects a bundle whose signed prekey signature was tampered with', () async {
+    test('rejects a bundle whose signed prekey signature was tampered with',
+        () async {
       final alice = await IdentityKeyPair.generateRandom();
       final bob = await IdentityKeyPair.generateRandom();
       final bobSignedPreKey = await SignedPreKey.generate(1);
@@ -85,14 +94,18 @@ void main() {
       );
     });
 
-    test('different runs produce different shared secrets (fresh ephemeral key)', () async {
+    test(
+        'different runs produce different shared secrets (fresh ephemeral key)',
+        () async {
       final alice = await IdentityKeyPair.generateRandom();
       final bob = await IdentityKeyPair.generateRandom();
       final bobSignedPreKey = await SignedPreKey.generate(1);
       final bundle = await _publishBundle(bob, bobSignedPreKey);
 
-      final first = await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
-      final second = await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
+      final first =
+          await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
+      final second =
+          await X3dh.initiate(localIdentity: alice, remoteBundle: bundle);
 
       expect(first.sharedSecret, isNot(equals(second.sharedSecret)));
     });

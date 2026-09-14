@@ -34,20 +34,23 @@ class X3dh {
     required RemotePreKeyBundle remoteBundle,
   }) async {
     if (!await remoteBundle.verifySignedPreKey()) {
-      throw StateError('signed prekey signature is invalid — refusing to start a session');
+      throw StateError(
+          'signed prekey signature is invalid — refusing to start a session');
     }
 
     final ephemeralKeyPair = await CryptoAlgorithms.x25519.newKeyPair();
     final ephemeralPublicKey = await ephemeralKeyPair.extractPublicKey();
 
-    final dh1 = await _dh(localIdentity.agreementKeyPair, remoteBundle.signedPreKey);
+    final dh1 =
+        await _dh(localIdentity.agreementKeyPair, remoteBundle.signedPreKey);
     final dh2 = await _dh(ephemeralKeyPair, remoteBundle.identityAgreementKey);
     final dh3 = await _dh(ephemeralKeyPair, remoteBundle.signedPreKey);
     final dh4 = remoteBundle.oneTimePreKey == null
         ? null
         : await _dh(ephemeralKeyPair, remoteBundle.oneTimePreKey!);
 
-    final sharedSecret = await _deriveSharedSecret([dh1, dh2, dh3, if (dh4 != null) dh4]);
+    final sharedSecret =
+        await _deriveSharedSecret([dh1, dh2, dh3, if (dh4 != null) dh4]);
 
     return X3dhInitiationResult(
       sharedSecret: sharedSecret,
@@ -75,7 +78,8 @@ class X3dh {
     return _deriveSharedSecret([dh1, dh2, dh3, if (dh4 != null) dh4]);
   }
 
-  static Future<List<int>> _dh(SimpleKeyPair keyPair, SimplePublicKey remotePublicKey) async {
+  static Future<List<int>> _dh(
+      SimpleKeyPair keyPair, SimplePublicKey remotePublicKey) async {
     final secretKey = await CryptoAlgorithms.x25519.sharedSecretKey(
       keyPair: keyPair,
       remotePublicKey: remotePublicKey,
@@ -83,7 +87,8 @@ class X3dh {
     return secretKey.extractBytes();
   }
 
-  static Future<List<int>> _deriveSharedSecret(List<List<int>> dhOutputs) async {
+  static Future<List<int>> _deriveSharedSecret(
+      List<List<int>> dhOutputs) async {
     // Per the X3DH spec: prefix the input keying material with 32 0xFF bytes
     // when using a Montgomery curve like X25519, so the key material can
     // never collide with a valid Ed25519/X25519 encoding of something else.

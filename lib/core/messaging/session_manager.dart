@@ -34,7 +34,8 @@ class SessionManager {
 
   String? _accountId;
 
-  Future<String> get accountId async => _accountId ??= await _identity.accountId();
+  Future<String> get accountId async =>
+      _accountId ??= await _identity.accountId();
 
   /// Publishes this device's prekeys (idempotent — safe on every launch) and
   /// logs in via the passwordless challenge/response flow. Call once at
@@ -91,7 +92,8 @@ class SessionManager {
   /// Associated data binds a ciphertext to a specific conversation direction
   /// so a message can't be replayed into a different context. Always
   /// ordered `sender:recipient` so both sides compute the same bytes.
-  Future<List<int>> _associatedData(String senderAccountId, String recipientAccountId) async {
+  Future<List<int>> _associatedData(
+      String senderAccountId, String recipientAccountId) async {
     return utf8.encode('$senderAccountId:$recipientAccountId');
   }
 
@@ -106,13 +108,15 @@ class SessionManager {
 
     if (session == null) {
       final bundle = await _backend.fetchPrekeyBundle(contactAccountId);
-      final initiation = await X3dh.initiate(localIdentity: _identity, remoteBundle: bundle);
+      final initiation =
+          await X3dh.initiate(localIdentity: _identity, remoteBundle: bundle);
       session = await DoubleRatchetSession.initAsInitiator(
         sharedSecret: initiation.sharedSecret,
         remoteRatchetPublicKey: bundle.signedPreKey,
       );
 
-      final ratchetMessage = await session.encrypt(plaintext, associatedData: associatedData);
+      final ratchetMessage =
+          await session.encrypt(plaintext, associatedData: associatedData);
       wireBytes = WireFormat.encodePrekeyMessage(
         senderIdentityAgreementKey: await _identity.agreementPublicKey,
         senderEphemeralKey: initiation.ephemeralPublicKey,
@@ -122,7 +126,8 @@ class SessionManager {
       );
       envelopeType = 'prekey_msg';
     } else {
-      final ratchetMessage = await session.encrypt(plaintext, associatedData: associatedData);
+      final ratchetMessage =
+          await session.encrypt(plaintext, associatedData: associatedData);
       wireBytes = WireFormat.encodeNormalMessage(ratchetMessage);
       envelopeType = 'normal_msg';
     }
@@ -134,7 +139,8 @@ class SessionManager {
     );
     await _store.saveSession(contactAccountId, session);
     await _store.upsertContact(contactAccountId);
-    await _store.saveMessage(contactId: contactAccountId, direction: 'out', body: text);
+    await _store.saveMessage(
+        contactId: contactAccountId, direction: 'out', body: text);
   }
 
   /// Polls the mailbox, decrypts everything it can, persists the results and
@@ -169,7 +175,8 @@ class SessionManager {
 
   Future<List<int>> _decryptEnvelope(MailboxEnvelope envelope) async {
     final myAccountId = await accountId;
-    final associatedData = await _associatedData(envelope.senderAccountId, myAccountId);
+    final associatedData =
+        await _associatedData(envelope.senderAccountId, myAccountId);
 
     if (envelope.envelopeType == 'prekey_msg') {
       final decoded = WireFormat.decodePrekeyMessage(envelope.ciphertext);
@@ -178,7 +185,8 @@ class SessionManager {
       if (session == null) {
         final signedPreKey = await _store.loadLatestSignedPreKey();
         if (signedPreKey == null || signedPreKey.id != decoded.signedPreKeyId) {
-          throw StateError('no matching local signed prekey for id ${decoded.signedPreKeyId}');
+          throw StateError(
+              'no matching local signed prekey for id ${decoded.signedPreKeyId}');
         }
         final oneTimePreKey = decoded.oneTimePreKeyId == null
             ? null
@@ -197,7 +205,8 @@ class SessionManager {
         );
       }
 
-      final plaintext = await session.decrypt(decoded.ratchetMessage, associatedData: associatedData);
+      final plaintext = await session.decrypt(decoded.ratchetMessage,
+          associatedData: associatedData);
       await _store.saveSession(envelope.senderAccountId, session);
       return plaintext;
     }
@@ -205,10 +214,13 @@ class SessionManager {
     if (envelope.envelopeType == 'normal_msg') {
       final session = await _store.loadSession(envelope.senderAccountId);
       if (session == null) {
-        throw StateError('received a normal_msg with no existing session for this contact');
+        throw StateError(
+            'received a normal_msg with no existing session for this contact');
       }
-      final ratchetMessage = WireFormat.decodeNormalMessage(envelope.ciphertext);
-      final plaintext = await session.decrypt(ratchetMessage, associatedData: associatedData);
+      final ratchetMessage =
+          WireFormat.decodeNormalMessage(envelope.ciphertext);
+      final plaintext =
+          await session.decrypt(ratchetMessage, associatedData: associatedData);
       await _store.saveSession(envelope.senderAccountId, session);
       return plaintext;
     }

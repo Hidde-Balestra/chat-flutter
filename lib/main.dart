@@ -54,7 +54,8 @@ class _StartupPageState extends State<StartupPage> {
     final database = await AppDatabase.open();
     final store = SqliteLocalStore(database);
     final backend = HttpChatBackend(baseUrl: Uri.parse(backendBaseUrl));
-    final sessionManager = SessionManager(identity: identity, backend: backend, store: store);
+    final sessionManager =
+        SessionManager(identity: identity, backend: backend, store: store);
     await sessionManager.bootstrap();
     return _Session(sessionManager: sessionManager, store: store);
   }
@@ -84,7 +85,8 @@ class _StartupPageState extends State<StartupPage> {
             );
           }
           final session = snapshot.data!;
-          return ContactsPage(sessionManager: session.sessionManager, store: session.store);
+          return ContactsPage(
+              sessionManager: session.sessionManager, store: session.store);
         },
       ),
     );
@@ -122,7 +124,8 @@ class _StartupError extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$error', textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: const Text('Opnieuw proberen')),
+            FilledButton(
+                onPressed: onRetry, child: const Text('Opnieuw proberen')),
           ],
         ),
       ),

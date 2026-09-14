@@ -15,7 +15,8 @@ class MailboxEnvelope {
 
   final int envelopeId;
   final String senderAccountId;
-  final String envelopeType; // 'prekey_msg' | 'normal_msg' | 'sender_key_distribution'
+  final String
+      envelopeType; // 'prekey_msg' | 'normal_msg' | 'sender_key_distribution'
   final List<int> ciphertext;
 }
 

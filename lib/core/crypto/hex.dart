@@ -12,6 +12,7 @@ List<int> hexToBytes(String hex) {
     throw ArgumentError('hex string must have an even length');
   }
   return [
-    for (var i = 0; i < hex.length; i += 2) int.parse(hex.substring(i, i + 2), radix: 16),
+    for (var i = 0; i < hex.length; i += 2)
+      int.parse(hex.substring(i, i + 2), radix: 16),
   ];
 }

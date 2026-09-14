@@ -36,7 +36,8 @@ class HttpChatBackend implements ChatBackend {
     if (authenticated) {
       final token = _bearerToken;
       if (token == null) {
-        throw StateError('not authenticated yet — call verifyAuthChallenge first');
+        throw StateError(
+            'not authenticated yet — call verifyAuthChallenge first');
       }
       headers['Authorization'] = 'Bearer $token';
     }
@@ -56,16 +57,20 @@ class HttpChatBackend implements ChatBackend {
     return _decode(response);
   }
 
-  Future<Map<String, dynamic>> _get(String path, {bool authenticated = false}) async {
-    final response = await _client.get(_uri(path), headers: _headers(authenticated: authenticated));
+  Future<Map<String, dynamic>> _get(String path,
+      {bool authenticated = false}) async {
+    final response = await _client.get(_uri(path),
+        headers: _headers(authenticated: authenticated));
     return _decode(response);
   }
 
   Map<String, dynamic> _decode(http.Response response) {
-    final decoded =
-        response.body.isEmpty ? <String, dynamic>{} : jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = response.body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode >= 400) {
-      throw HttpChatBackendException(response.statusCode, decoded['error'] as String? ?? 'request failed');
+      throw HttpChatBackendException(
+          response.statusCode, decoded['error'] as String? ?? 'request failed');
     }
     return decoded;
   }
@@ -95,7 +100,8 @@ class HttpChatBackend implements ChatBackend {
   }
 
   @override
-  Future<void> verifyAuthChallenge(String accountId, List<int> signature) async {
+  Future<void> verifyAuthChallenge(
+      String accountId, List<int> signature) async {
     final result = await _post('auth/verify', {
       'account_id': accountId,
       'signature': base64Encode(signature),
@@ -104,7 +110,8 @@ class HttpChatBackend implements ChatBackend {
   }
 
   @override
-  Future<void> uploadOneTimePreKeys(Map<int, SimplePublicKey> prekeysById) async {
+  Future<void> uploadOneTimePreKeys(
+      Map<int, SimplePublicKey> prekeysById) async {
     await _post(
       'prekeys',
       {
@@ -136,11 +143,13 @@ class HttpChatBackend implements ChatBackend {
         base64Decode(result['signed_prekey'] as String),
         type: KeyPairType.x25519,
       ),
-      signedPreKeySignature: base64Decode(result['signed_prekey_sig'] as String),
+      signedPreKeySignature:
+          base64Decode(result['signed_prekey_sig'] as String),
       signedPreKeyId: result['signed_prekey_id'] as int,
       oneTimePreKey: oneTime == null
           ? null
-          : SimplePublicKey(base64Decode(oneTime['pubkey'] as String), type: KeyPairType.x25519),
+          : SimplePublicKey(base64Decode(oneTime['pubkey'] as String),
+              type: KeyPairType.x25519),
       oneTimePreKeyId: oneTime == null ? null : oneTime['prekey_id'] as int,
     );
   }
@@ -182,6 +191,7 @@ class HttpChatBackend implements ChatBackend {
     if (envelopeIds.isEmpty) {
       return;
     }
-    await _post('mailbox/ack', {'envelope_ids': envelopeIds}, authenticated: true);
+    await _post('mailbox/ack', {'envelope_ids': envelopeIds},
+        authenticated: true);
   }
 }

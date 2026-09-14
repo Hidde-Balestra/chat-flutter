@@ -8,7 +8,9 @@ import 'fakes.dart';
 
 void main() {
   group('SessionManager', () {
-    test('Alice and Bob exchange end-to-end encrypted messages, server never sees plaintext', () async {
+    test(
+        'Alice and Bob exchange end-to-end encrypted messages, server never sees plaintext',
+        () async {
       final server = FakeServer();
 
       final aliceIdentity = await IdentityKeyPair.generateRandom();
@@ -38,7 +40,8 @@ void main() {
 
       // The server only ever stores opaque ciphertext, never the plaintext.
       expect(server.mailbox, hasLength(1));
-      final rawOnServer = utf8.decode(server.mailbox.single.ciphertext, allowMalformed: true);
+      final rawOnServer =
+          utf8.decode(server.mailbox.single.ciphertext, allowMalformed: true);
       expect(rawOnServer, isNot(contains('hoi bob')));
 
       final bobUpdates = await bob.pollAndDecrypt();
@@ -56,7 +59,8 @@ void main() {
       expect(aliceUpdates, {bobId});
 
       final aliceInbox = await aliceStore.messagesWith(bobId);
-      expect(aliceInbox.map((m) => m.body), contains('hoi alice, hoe gaat het?'));
+      expect(
+          aliceInbox.map((m) => m.body), contains('hoi alice, hoe gaat het?'));
 
       // A longer back-and-forth to exercise several DH ratchet steps.
       for (var i = 0; i < 5; i++) {
@@ -72,7 +76,9 @@ void main() {
       expect(finalAliceInbox.map((m) => m.body), contains('bob zegt 4'));
     });
 
-    test('a fresh SessionManager can initiate the very first contact with someone new', () async {
+    test(
+        'a fresh SessionManager can initiate the very first contact with someone new',
+        () async {
       final server = FakeServer();
 
       final bobIdentity = await IdentityKeyPair.generateRandom();

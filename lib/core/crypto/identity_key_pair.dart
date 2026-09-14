@@ -44,11 +44,15 @@ class IdentityKeyPair {
       throw ArgumentError('seed must be exactly 32 bytes');
     }
 
-    final signingSeed = await _deriveSubSeed(seed, 'privacychat-identity-sign-v1');
-    final agreementSeed = await _deriveSubSeed(seed, 'privacychat-identity-dh-v1');
+    final signingSeed =
+        await _deriveSubSeed(seed, 'privacychat-identity-sign-v1');
+    final agreementSeed =
+        await _deriveSubSeed(seed, 'privacychat-identity-dh-v1');
 
-    final signingKeyPair = await CryptoAlgorithms.ed25519.newKeyPairFromSeed(signingSeed);
-    final agreementKeyPair = await CryptoAlgorithms.x25519.newKeyPairFromSeed(agreementSeed);
+    final signingKeyPair =
+        await CryptoAlgorithms.ed25519.newKeyPairFromSeed(signingSeed);
+    final agreementKeyPair =
+        await CryptoAlgorithms.x25519.newKeyPairFromSeed(agreementSeed);
 
     return IdentityKeyPair._(
       seed: seed,
@@ -65,9 +69,11 @@ class IdentityKeyPair {
     return derived.extractBytes();
   }
 
-  Future<SimplePublicKey> get signingPublicKey => signingKeyPair.extractPublicKey();
+  Future<SimplePublicKey> get signingPublicKey =>
+      signingKeyPair.extractPublicKey();
 
-  Future<SimplePublicKey> get agreementPublicKey => agreementKeyPair.extractPublicKey();
+  Future<SimplePublicKey> get agreementPublicKey =>
+      agreementKeyPair.extractPublicKey();
 
   /// The public, permanent account id: "05" + hex(Ed25519 public key) — the
   /// same convention Session uses for its Session IDs. Purely derived from a

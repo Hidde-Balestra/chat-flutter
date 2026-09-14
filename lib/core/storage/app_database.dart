@@ -53,7 +53,8 @@ class AppDatabase {
             sent_at INTEGER NOT NULL
           )
         ''');
-        await db.execute('CREATE INDEX idx_messages_contact ON messages(contact_id, sent_at)');
+        await db.execute(
+            'CREATE INDEX idx_messages_contact ON messages(contact_id, sent_at)');
         await db.execute('''
           CREATE TABLE ratchet_sessions (
             contact_id TEXT PRIMARY KEY,

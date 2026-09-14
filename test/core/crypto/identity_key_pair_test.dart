@@ -27,7 +27,8 @@ void main() {
     });
 
     test('rejects seeds that are not exactly 32 bytes', () async {
-      expect(() => IdentityKeyPair.fromSeed(List<int>.filled(16, 0)), throwsArgumentError);
+      expect(() => IdentityKeyPair.fromSeed(List<int>.filled(16, 0)),
+          throwsArgumentError);
     });
 
     test('signatures verify against the public signing key', () async {

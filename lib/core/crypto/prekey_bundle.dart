@@ -61,7 +61,8 @@ class RemotePreKeyBundle {
   Future<bool> verifySignedPreKey() {
     return CryptoAlgorithms.ed25519.verify(
       signedPreKey.bytes,
-      signature: Signature(signedPreKeySignature, publicKey: identitySigningKey),
+      signature:
+          Signature(signedPreKeySignature, publicKey: identitySigningKey),
     );
   }
 }

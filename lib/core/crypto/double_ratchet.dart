@@ -38,7 +38,8 @@ class RatchetHeader {
     }
     final data = ByteData.sublistView(Uint8List.fromList(bytes));
     return RatchetHeader(
-      dhPublicKey: SimplePublicKey(bytes.sublist(0, 32), type: KeyPairType.x25519),
+      dhPublicKey:
+          SimplePublicKey(bytes.sublist(0, 32), type: KeyPairType.x25519),
       previousChainLength: data.getUint32(32, Endian.big),
       messageNumber: data.getUint32(36, Endian.big),
     );
@@ -111,7 +112,8 @@ class DoubleRatchetSession {
       remoteRatchetPublicKey: remoteRatchetPublicKey,
       rootKey: sharedSecret,
     );
-    final dhOut = await session._dh(session._selfRatchetKeyPair, remoteRatchetPublicKey);
+    final dhOut =
+        await session._dh(session._selfRatchetKeyPair, remoteRatchetPublicKey);
     final derived = await session._kdfRk(session._rootKey, dhOut);
     session._rootKey = derived.rootKey;
     session._sendingChainKey = derived.chainKey;
@@ -138,21 +140,26 @@ class DoubleRatchetSession {
     final selfPrivateKey = await _selfRatchetKeyPair.extractPrivateKeyBytes();
     return {
       'selfRatchetPrivateKey': base64Encode(selfPrivateKey),
-      'remoteRatchetPublicKey':
-          _remoteRatchetPublicKey == null ? null : base64Encode(_remoteRatchetPublicKey!.bytes),
+      'remoteRatchetPublicKey': _remoteRatchetPublicKey == null
+          ? null
+          : base64Encode(_remoteRatchetPublicKey!.bytes),
       'rootKey': base64Encode(_rootKey),
-      'sendingChainKey': _sendingChainKey == null ? null : base64Encode(_sendingChainKey!),
-      'receivingChainKey': _receivingChainKey == null ? null : base64Encode(_receivingChainKey!),
+      'sendingChainKey':
+          _sendingChainKey == null ? null : base64Encode(_sendingChainKey!),
+      'receivingChainKey':
+          _receivingChainKey == null ? null : base64Encode(_receivingChainKey!),
       'sendingMessageNumber': _sendingMessageNumber,
       'receivingMessageNumber': _receivingMessageNumber,
       'previousSendingChainLength': _previousSendingChainLength,
-      'skippedMessageKeys': _skippedMessageKeys.map((key, value) => MapEntry(key, base64Encode(value))),
+      'skippedMessageKeys': _skippedMessageKeys
+          .map((key, value) => MapEntry(key, base64Encode(value))),
     };
   }
 
-  static Future<DoubleRatchetSession> fromStorage(Map<String, dynamic> json) async {
-    final selfRatchetKeyPair = await CryptoAlgorithms.x25519
-        .newKeyPairFromSeed(base64Decode(json['selfRatchetPrivateKey'] as String));
+  static Future<DoubleRatchetSession> fromStorage(
+      Map<String, dynamic> json) async {
+    final selfRatchetKeyPair = await CryptoAlgorithms.x25519.newKeyPairFromSeed(
+        base64Decode(json['selfRatchetPrivateKey'] as String));
 
     final session = DoubleRatchetSession._(
       selfRatchetKeyPair: selfRatchetKeyPair,
@@ -163,10 +170,12 @@ class DoubleRatchetSession {
               type: KeyPairType.x25519,
             ),
       rootKey: base64Decode(json['rootKey'] as String),
-      sendingChainKey:
-          json['sendingChainKey'] == null ? null : base64Decode(json['sendingChainKey'] as String),
-      receivingChainKey:
-          json['receivingChainKey'] == null ? null : base64Decode(json['receivingChainKey'] as String),
+      sendingChainKey: json['sendingChainKey'] == null
+          ? null
+          : base64Decode(json['sendingChainKey'] as String),
+      receivingChainKey: json['receivingChainKey'] == null
+          ? null
+          : base64Decode(json['receivingChainKey'] as String),
       sendingMessageNumber: json['sendingMessageNumber'] as int,
       receivingMessageNumber: json['receivingMessageNumber'] as int,
       previousSendingChainLength: json['previousSendingChainLength'] as int,
@@ -174,14 +183,17 @@ class DoubleRatchetSession {
 
     final skipped = (json['skippedMessageKeys'] as Map).cast<String, dynamic>();
     for (final entry in skipped.entries) {
-      session._skippedMessageKeys[entry.key] = base64Decode(entry.value as String);
+      session._skippedMessageKeys[entry.key] =
+          base64Decode(entry.value as String);
     }
     return session;
   }
 
-  Future<RatchetMessage> encrypt(List<int> plaintext, {List<int> associatedData = const []}) async {
+  Future<RatchetMessage> encrypt(List<int> plaintext,
+      {List<int> associatedData = const []}) async {
     if (_sendingChainKey == null) {
-      throw StateError('no sending chain yet — nothing has been received to ratchet on');
+      throw StateError(
+          'no sending chain yet — nothing has been received to ratchet on');
     }
 
     final stepped = await _kdfCk(_sendingChainKey!);
@@ -194,11 +206,13 @@ class DoubleRatchetSession {
     );
     _sendingMessageNumber += 1;
 
-    final ciphertext = await _seal(stepped.messageKey, plaintext, header, associatedData);
+    final ciphertext =
+        await _seal(stepped.messageKey, plaintext, header, associatedData);
     return RatchetMessage(header: header, ciphertext: ciphertext);
   }
 
-  Future<List<int>> decrypt(RatchetMessage message, {List<int> associatedData = const []}) async {
+  Future<List<int>> decrypt(RatchetMessage message,
+      {List<int> associatedData = const []}) async {
     final skippedKey = _skippedKeyFor(message.header);
     final skippedMessageKey = _skippedMessageKeys.remove(skippedKey);
     if (skippedMessageKey != null) {
@@ -206,9 +220,11 @@ class DoubleRatchetSession {
     }
 
     final isNewRatchetKey = _remoteRatchetPublicKey == null ||
-        !_listEquality.equals(_remoteRatchetPublicKey!.bytes, message.header.dhPublicKey.bytes);
+        !_listEquality.equals(
+            _remoteRatchetPublicKey!.bytes, message.header.dhPublicKey.bytes);
 
-    if (!isNewRatchetKey && message.header.messageNumber < _receivingMessageNumber) {
+    if (!isNewRatchetKey &&
+        message.header.messageNumber < _receivingMessageNumber) {
       // Already processed on this chain (its key was consumed, not skipped),
       // and this isn't a match in _skippedMessageKeys either — a duplicate
       // delivery. Reject explicitly instead of deriving the wrong message
@@ -254,7 +270,8 @@ class DoubleRatchetSession {
       return;
     }
     if (until - _receivingMessageNumber > _maxSkippedMessageKeys) {
-      throw StateError('refusing to skip more than $_maxSkippedMessageKeys message keys');
+      throw StateError(
+          'refusing to skip more than $_maxSkippedMessageKeys message keys');
     }
     while (_receivingMessageNumber < until) {
       final stepped = await _kdfCk(_receivingChainKey!);
@@ -271,7 +288,8 @@ class DoubleRatchetSession {
   String _skippedKeyFor(RatchetHeader header) =>
       '${bytesToHex(header.dhPublicKey.bytes)}:${header.messageNumber}';
 
-  Future<List<int>> _dh(SimpleKeyPair keyPair, SimplePublicKey remotePublicKey) async {
+  Future<List<int>> _dh(
+      SimpleKeyPair keyPair, SimplePublicKey remotePublicKey) async {
     final secretKey = await CryptoAlgorithms.x25519.sharedSecretKey(
       keyPair: keyPair,
       remotePublicKey: remotePublicKey,
@@ -279,7 +297,8 @@ class DoubleRatchetSession {
     return secretKey.extractBytes();
   }
 
-  Future<({List<int> rootKey, List<int> chainKey})> _kdfRk(List<int> rootKey, List<int> dhOut) async {
+  Future<({List<int> rootKey, List<int> chainKey})> _kdfRk(
+      List<int> rootKey, List<int> dhOut) async {
     final derived = await CryptoAlgorithms.hkdf64.deriveKey(
       secretKey: SecretKey(dhOut),
       nonce: rootKey,
@@ -289,7 +308,8 @@ class DoubleRatchetSession {
     return (rootKey: bytes.sublist(0, 32), chainKey: bytes.sublist(32, 64));
   }
 
-  Future<({List<int> chainKey, List<int> messageKey})> _kdfCk(List<int> chainKey) async {
+  Future<({List<int> chainKey, List<int> messageKey})> _kdfCk(
+      List<int> chainKey) async {
     final chainMac = await CryptoAlgorithms.hmacSha256.calculateMac(
       const [0x02],
       secretKey: SecretKey(chainKey),
@@ -301,7 +321,8 @@ class DoubleRatchetSession {
     return (chainKey: chainMac.bytes, messageKey: messageMac.bytes);
   }
 
-  Future<({List<int> key, List<int> nonce})> _cipherParamsFor(List<int> messageKey) async {
+  Future<({List<int> key, List<int> nonce})> _cipherParamsFor(
+      List<int> messageKey) async {
     final derived = await CryptoAlgorithms.hkdf44.deriveKey(
       secretKey: SecretKey(messageKey),
       info: utf8.encode('privacychat-ratchet-msg-v1'),
@@ -335,7 +356,8 @@ class DoubleRatchetSession {
     final macLength = CryptoAlgorithms.aead.macAlgorithm.macLength;
     final cipherTextLength = message.ciphertext.length - macLength;
     if (cipherTextLength < 0) {
-      throw StateError('ciphertext shorter than the AEAD tag — malformed message');
+      throw StateError(
+          'ciphertext shorter than the AEAD tag — malformed message');
     }
 
     final box = SecretBox(
