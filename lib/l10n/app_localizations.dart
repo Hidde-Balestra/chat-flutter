@@ -433,6 +433,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unlock PrivacyChat'**
   String get biometricUnlockReason;
+
+  /// No description provided for @settingsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get settingsHelp;
+
+  /// No description provided for @helpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How does the app work?'**
+  String get helpTitle;
+
+  /// No description provided for @helpMenuEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'How does the app work?'**
+  String get helpMenuEntry;
+
+  /// No description provided for @helpMenuEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A short explanation in plain language'**
+  String get helpMenuEntrySubtitle;
+
+  /// No description provided for @helpIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is PrivacyChat?'**
+  String get helpIntroTitle;
+
+  /// No description provided for @helpIntroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'PrivacyChat is a chat app that nobody — not even us — can read along with. You don\'t need a phone number, email address, or password. Everything you need is right here on this screen.'**
+  String get helpIntroBody;
+
+  /// No description provided for @helpAccountIdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Account ID'**
+  String get helpAccountIdTitle;
+
+  /// No description provided for @helpAccountIdBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The first time you opened the app, a long code was automatically created for you: your Account ID. Think of it as an address other people can use to reach you, without it revealing anything about who you are. You can find it by tapping the badge icon in the top right. Only share this code with people you actually want to talk to — for example over WhatsApp, text message, or in person.'**
+  String get helpAccountIdBody;
+
+  /// No description provided for @helpAddContactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding someone to chat with'**
+  String get helpAddContactTitle;
+
+  /// No description provided for @helpAddContactBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the round + button in the bottom right. Paste or type in the Account ID the other person gave you, and optionally give them a name so you know who it is (that name stays only on your own device). Then you can start chatting right away.'**
+  String get helpAddContactBody;
+
+  /// No description provided for @helpRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What are \"message requests\"?'**
+  String get helpRequestsTitle;
+
+  /// No description provided for @helpRequestsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If someone messages you first, before you\'ve added them, it shows up at the top as a \"message request\", separate from your regular conversations. Open it and choose: Accept (start chatting normally), Decline (the request disappears), or Block (they can no longer bother you).'**
+  String get helpRequestsBody;
+
+  /// No description provided for @helpSecurityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Is it actually secure?'**
+  String get helpSecurityTitle;
+
+  /// No description provided for @helpSecurityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes. Every message is locked up on your own device before it\'s even sent, and nobody can open it along the way — not even the server. Only the recipient\'s device holds the key to open it again.'**
+  String get helpSecurityBody;
+
+  /// No description provided for @helpLockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Locking the app itself'**
+  String get helpLockTitle;
+
+  /// No description provided for @helpLockBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Want to make sure nobody who picks up your unlocked phone can casually look through your conversations? Turn on a PIN under Settings → Security. You can also choose to use your fingerprint or face instead of typing that PIN every time.'**
+  String get helpLockBody;
+
+  /// No description provided for @helpDelayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why does a message sometimes take a few seconds to arrive?'**
+  String get helpDelayTitle;
+
+  /// No description provided for @helpDelayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The app checks every few seconds whether new messages are waiting for you, instead of the server actively notifying it. This is deliberate, so the server needs to know as little about you as possible. A message usually shows up within 1-2 seconds while you have the conversation open.'**
+  String get helpDelayBody;
+
+  /// No description provided for @helpLostAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Important: deleted the app or got a new phone?'**
+  String get helpLostAccessTitle;
+
+  /// No description provided for @helpLostAccessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'There is currently no way to restore your account on another device. If you delete the app, or lose your phone, you also lose access to your conversations and your Account ID, and you (and your contacts) will need to start over. So be careful before deleting it.'**
+  String get helpLostAccessBody;
 }
 
 class _AppLocalizationsDelegate

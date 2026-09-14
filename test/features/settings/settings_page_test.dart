@@ -141,5 +141,20 @@ void main() {
       expect(await appLock.isBiometricEnabled, isTrue);
       expect(localAuth.authenticateResult, isTrue); // sanity: fake is wired
     });
+
+    testWidgets('opens the help page from the Help entry', (tester) async {
+      installFakeSecureStorage();
+      final appLock = AppLockController(pbkdf2Iterations: _testIterations);
+      await tester.pumpWidget(localizedTestApp(SettingsPage(
+        localeController: LocaleController(),
+        appLock: appLock,
+      )));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Hoe werkt de app?'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Wat is PrivacyChat?'), findsOneWidget);
+    });
   });
 }

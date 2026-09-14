@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/security/app_lock_controller.dart';
 import '../../core/settings/locale_controller.dart';
 import '../../l10n/app_localizations.dart';
+import '../help/help_page.dart';
 import 'pin_pages.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -135,6 +136,18 @@ class _SettingsPageState extends State<SettingsPage> {
                     value: _biometricEnabled,
                     onChanged: _toggleBiometric,
                   ),
+                const Divider(),
+                _SectionHeader(l10n.settingsHelp),
+                ListTile(
+                  leading: const Icon(Icons.help_outline),
+                  title: Text(l10n.helpMenuEntry),
+                  subtitle: Text(l10n.helpMenuEntrySubtitle),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HelpPage()),
+                    );
+                  },
+                ),
               ],
             ),
     );

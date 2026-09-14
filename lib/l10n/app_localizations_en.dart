@@ -188,4 +188,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get biometricUnlockReason => 'Unlock PrivacyChat';
+
+  @override
+  String get settingsHelp => 'Help';
+
+  @override
+  String get helpTitle => 'How does the app work?';
+
+  @override
+  String get helpMenuEntry => 'How does the app work?';
+
+  @override
+  String get helpMenuEntrySubtitle => 'A short explanation in plain language';
+
+  @override
+  String get helpIntroTitle => 'What is PrivacyChat?';
+
+  @override
+  String get helpIntroBody =>
+      'PrivacyChat is a chat app that nobody — not even us — can read along with. You don\'t need a phone number, email address, or password. Everything you need is right here on this screen.';
+
+  @override
+  String get helpAccountIdTitle => 'Your Account ID';
+
+  @override
+  String get helpAccountIdBody =>
+      'The first time you opened the app, a long code was automatically created for you: your Account ID. Think of it as an address other people can use to reach you, without it revealing anything about who you are. You can find it by tapping the badge icon in the top right. Only share this code with people you actually want to talk to — for example over WhatsApp, text message, or in person.';
+
+  @override
+  String get helpAddContactTitle => 'Adding someone to chat with';
+
+  @override
+  String get helpAddContactBody =>
+      'Tap the round + button in the bottom right. Paste or type in the Account ID the other person gave you, and optionally give them a name so you know who it is (that name stays only on your own device). Then you can start chatting right away.';
+
+  @override
+  String get helpRequestsTitle => 'What are \"message requests\"?';
+
+  @override
+  String get helpRequestsBody =>
+      'If someone messages you first, before you\'ve added them, it shows up at the top as a \"message request\", separate from your regular conversations. Open it and choose: Accept (start chatting normally), Decline (the request disappears), or Block (they can no longer bother you).';
+
+  @override
+  String get helpSecurityTitle => 'Is it actually secure?';
+
+  @override
+  String get helpSecurityBody =>
+      'Yes. Every message is locked up on your own device before it\'s even sent, and nobody can open it along the way — not even the server. Only the recipient\'s device holds the key to open it again.';
+
+  @override
+  String get helpLockTitle => 'Locking the app itself';
+
+  @override
+  String get helpLockBody =>
+      'Want to make sure nobody who picks up your unlocked phone can casually look through your conversations? Turn on a PIN under Settings → Security. You can also choose to use your fingerprint or face instead of typing that PIN every time.';
+
+  @override
+  String get helpDelayTitle =>
+      'Why does a message sometimes take a few seconds to arrive?';
+
+  @override
+  String get helpDelayBody =>
+      'The app checks every few seconds whether new messages are waiting for you, instead of the server actively notifying it. This is deliberate, so the server needs to know as little about you as possible. A message usually shows up within 1-2 seconds while you have the conversation open.';
+
+  @override
+  String get helpLostAccessTitle =>
+      'Important: deleted the app or got a new phone?';
+
+  @override
+  String get helpLostAccessBody =>
+      'There is currently no way to restore your account on another device. If you delete the app, or lose your phone, you also lose access to your conversations and your Account ID, and you (and your contacts) will need to start over. So be careful before deleting it.';
 }

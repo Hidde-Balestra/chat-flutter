@@ -78,5 +78,34 @@
   "settingsBiometricUnlock": "Ontgrendelen met vingerafdruk/gezicht",
   "settingsBiometricUnlockSubtitle": "Een snellere manier dan je pincode typen — de pincode beschermt je data nog steeds echt",
   "useFingerprint": "Vingerafdruk gebruiken",
-  "biometricUnlockReason": "Ontgrendel PrivacyChat"
+  "biometricUnlockReason": "Ontgrendel PrivacyChat",
+
+  "settingsHelp": "Help",
+  "helpTitle": "Hoe werkt de app?",
+  "helpMenuEntry": "Hoe werkt de app?",
+  "helpMenuEntrySubtitle": "Een korte uitleg in gewone taal",
+
+  "helpIntroTitle": "Wat is PrivacyChat?",
+  "helpIntroBody": "PrivacyChat is een chat-app waarbij niemand — ook wij niet — kan meelezen. Je hebt er geen telefoonnummer, e-mailadres of wachtwoord voor nodig. Alles wat je nodig hebt, staat gewoon op dit scherm.",
+
+  "helpAccountIdTitle": "Jouw Account ID",
+  "helpAccountIdBody": "Toen je de app voor het eerst opende, is er automatisch een lange code voor je aangemaakt: je Account ID. Dit is een soort adres waarop anderen je kunnen bereiken, zonder dat het iets over wie je bent verraadt. Je vindt 'm door op het naamplaatje-icoontje rechtsboven te tikken. Deel deze code alleen met mensen die je wilt spreken — bijvoorbeeld via WhatsApp, sms, of gewoon mondeling.",
+
+  "helpAddContactTitle": "Iemand toevoegen om mee te chatten",
+  "helpAddContactBody": "Tik op de ronde +-knop rechtsonder. Plak of typ daar het Account ID dat de ander je heeft gegeven, en geef diegene eventueel een naam zodat je weet wie het is (die naam blijft alleen op jouw eigen toestel staan). Daarna kun je meteen chatten.",
+
+  "helpRequestsTitle": "\"Berichtverzoeken\" — wat is dat?",
+  "helpRequestsBody": "Stuurt iemand jou als eerste een bericht, terwijl je diegene nog niet had toegevoegd? Dan verschijnt dat bovenaan als \"berichtverzoek\", los van je gewone gesprekken. Open het en kies: Accepteren (gewoon chatten), Weigeren (verzoek verdwijnt) of Blokkeren (diegene kan je niet meer lastigvallen).",
+
+  "helpSecurityTitle": "Is het echt veilig?",
+  "helpSecurityBody": "Ja. Elk bericht wordt al op je eigen toestel op slot gezet vóórdat het verstuurd wordt, en kan onderweg door niemand geopend worden — ook de server niet. Alleen het toestel van de ontvanger heeft de sleutel om het weer te openen.",
+
+  "helpLockTitle": "De app zelf vergrendelen",
+  "helpLockBody": "Wil je dat niemand die toevallig je ontgrendelde telefoon vastpakt zomaar in je gesprekken kan kijken? Zet dan bij Instellingen → Beveiliging een pincode aan. Je kunt er ook voor kiezen om voortaan je vingerafdruk of gezicht te gebruiken in plaats van elke keer die pincode te typen.",
+
+  "helpDelayTitle": "Waarom duurt het soms een paar seconden voordat een bericht aankomt?",
+  "helpDelayBody": "De app checkt elke paar seconden zelf even of er nieuwe berichten voor je klaarstaan, in plaats van dat de server je actief waarschuwt. Dat is expres zo gebouwd, zodat de server zo min mogelijk over jou hoeft te weten. Een bericht is meestal binnen 1 à 2 seconden zichtbaar als je het gesprek open hebt staan.",
+
+  "helpLostAccessTitle": "Belangrijk: app verwijderd of nieuwe telefoon?",
+  "helpLostAccessBody": "Er is op dit moment geen manier om je account terug te zetten op een ander toestel. Verwijder je de app, of ben je je telefoon kwijt, dan ben je ook de toegang tot je gesprekken en je Account ID kwijt, en moet je (en je contacten) opnieuw beginnen. Wees dus voorzichtig met verwijderen."
 }

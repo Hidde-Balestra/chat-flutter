@@ -190,4 +190,74 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get biometricUnlockReason => 'Ontgrendel PrivacyChat';
+
+  @override
+  String get settingsHelp => 'Help';
+
+  @override
+  String get helpTitle => 'Hoe werkt de app?';
+
+  @override
+  String get helpMenuEntry => 'Hoe werkt de app?';
+
+  @override
+  String get helpMenuEntrySubtitle => 'Een korte uitleg in gewone taal';
+
+  @override
+  String get helpIntroTitle => 'Wat is PrivacyChat?';
+
+  @override
+  String get helpIntroBody =>
+      'PrivacyChat is een chat-app waarbij niemand — ook wij niet — kan meelezen. Je hebt er geen telefoonnummer, e-mailadres of wachtwoord voor nodig. Alles wat je nodig hebt, staat gewoon op dit scherm.';
+
+  @override
+  String get helpAccountIdTitle => 'Jouw Account ID';
+
+  @override
+  String get helpAccountIdBody =>
+      'Toen je de app voor het eerst opende, is er automatisch een lange code voor je aangemaakt: je Account ID. Dit is een soort adres waarop anderen je kunnen bereiken, zonder dat het iets over wie je bent verraadt. Je vindt \'m door op het naamplaatje-icoontje rechtsboven te tikken. Deel deze code alleen met mensen die je wilt spreken — bijvoorbeeld via WhatsApp, sms, of gewoon mondeling.';
+
+  @override
+  String get helpAddContactTitle => 'Iemand toevoegen om mee te chatten';
+
+  @override
+  String get helpAddContactBody =>
+      'Tik op de ronde +-knop rechtsonder. Plak of typ daar het Account ID dat de ander je heeft gegeven, en geef diegene eventueel een naam zodat je weet wie het is (die naam blijft alleen op jouw eigen toestel staan). Daarna kun je meteen chatten.';
+
+  @override
+  String get helpRequestsTitle => '\"Berichtverzoeken\" — wat is dat?';
+
+  @override
+  String get helpRequestsBody =>
+      'Stuurt iemand jou als eerste een bericht, terwijl je diegene nog niet had toegevoegd? Dan verschijnt dat bovenaan als \"berichtverzoek\", los van je gewone gesprekken. Open het en kies: Accepteren (gewoon chatten), Weigeren (verzoek verdwijnt) of Blokkeren (diegene kan je niet meer lastigvallen).';
+
+  @override
+  String get helpSecurityTitle => 'Is het echt veilig?';
+
+  @override
+  String get helpSecurityBody =>
+      'Ja. Elk bericht wordt al op je eigen toestel op slot gezet vóórdat het verstuurd wordt, en kan onderweg door niemand geopend worden — ook de server niet. Alleen het toestel van de ontvanger heeft de sleutel om het weer te openen.';
+
+  @override
+  String get helpLockTitle => 'De app zelf vergrendelen';
+
+  @override
+  String get helpLockBody =>
+      'Wil je dat niemand die toevallig je ontgrendelde telefoon vastpakt zomaar in je gesprekken kan kijken? Zet dan bij Instellingen → Beveiliging een pincode aan. Je kunt er ook voor kiezen om voortaan je vingerafdruk of gezicht te gebruiken in plaats van elke keer die pincode te typen.';
+
+  @override
+  String get helpDelayTitle =>
+      'Waarom duurt het soms een paar seconden voordat een bericht aankomt?';
+
+  @override
+  String get helpDelayBody =>
+      'De app checkt elke paar seconden zelf even of er nieuwe berichten voor je klaarstaan, in plaats van dat de server je actief waarschuwt. Dat is expres zo gebouwd, zodat de server zo min mogelijk over jou hoeft te weten. Een bericht is meestal binnen 1 à 2 seconden zichtbaar als je het gesprek open hebt staan.';
+
+  @override
+  String get helpLostAccessTitle =>
+      'Belangrijk: app verwijderd of nieuwe telefoon?';
+
+  @override
+  String get helpLostAccessBody =>
+      'Er is op dit moment geen manier om je account terug te zetten op een ander toestel. Verwijder je de app, of ben je je telefoon kwijt, dan ben je ook de toegang tot je gesprekken en je Account ID kwijt, en moet je (en je contacten) opnieuw beginnen. Wees dus voorzichtig met verwijderen.';
 }
