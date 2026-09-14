@@ -6,6 +6,8 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Ontgrendel de app met Face ID in plaats van je pincode.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Privacychat</string>
 	<key>CFBundleExecutable</key>

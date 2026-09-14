@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_auth_platform_interface/local_auth_platform_interface.dart';
 import 'package:privacychat/core/security/app_lock_controller.dart';
 import 'package:privacychat/core/settings/locale_controller.dart';
 import 'package:privacychat/core/storage/app_database.dart';
 import 'package:privacychat/features/settings/settings_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../test_helpers/fake_local_auth.dart';
 import '../../test_helpers/fake_secure_storage.dart';
 import '../../test_helpers/localized_test_app.dart';
 
@@ -19,6 +21,7 @@ const _testIterations = 10;
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    installFakeLocalAuth();
   });
 
   group('SettingsPage', () {
@@ -93,6 +96,50 @@ void main() {
       expect(
           find.text('Kies een pincode'), findsOneWidget); // sent back to step 1
       expect(await appLock.isEnabled, isFalse);
+    });
+
+    testWidgets(
+        'the biometric toggle only shows once a PIN is set and the device '
+        'supports it, and lets you turn it on', (tester) async {
+      final platform = installFakeSecureStorage();
+      platform.values[AppDatabase.passphraseStorageKey] =
+          'existing-db-passphrase';
+      final localAuth = installFakeLocalAuth()
+        ..deviceSupportsBiometricsResult = true
+        ..enrolledBiometrics = [BiometricType.fingerprint];
+
+      final appLock = AppLockController(pbkdf2Iterations: _testIterations);
+      await tester.pumpWidget(localizedTestApp(SettingsPage(
+        localeController: LocaleController(),
+        appLock: appLock,
+      )));
+      await tester.pumpAndSettle();
+
+      // No PIN yet — biometric toggle isn't offered at all.
+      expect(find.text('Ontgrendelen met vingerafdruk/gezicht'), findsNothing);
+
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.text('Volgende'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.text('Instellen'));
+      await tester.pumpAndSettle();
+
+      // Now that app-lock is on and the device supports it, it appears.
+      expect(
+          find.text('Ontgrendelen met vingerafdruk/gezicht'), findsOneWidget);
+      expect(await appLock.isBiometricEnabled, isFalse);
+
+      await tester.tap(find.text('Ontgrendelen met vingerafdruk/gezicht'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.text('Ontgrendelen'));
+      await tester.pumpAndSettle();
+
+      expect(await appLock.isBiometricEnabled, isTrue);
+      expect(localAuth.authenticateResult, isTrue); // sanity: fake is wired
     });
   });
 }

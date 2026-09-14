@@ -21,6 +21,8 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _lockEnabled = false;
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
   bool _loading = true;
 
   @override
@@ -30,10 +32,14 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _load() async {
-    final enabled = await widget.appLock.isEnabled;
+    final lockEnabled = await widget.appLock.isEnabled;
+    final biometricAvailable = await widget.appLock.isBiometricAvailable;
+    final biometricEnabled = await widget.appLock.isBiometricEnabled;
     if (!mounted) return;
     setState(() {
-      _lockEnabled = enabled;
+      _lockEnabled = lockEnabled;
+      _biometricAvailable = biometricAvailable;
+      _biometricEnabled = biometricEnabled;
       _loading = false;
     });
   }
@@ -53,8 +59,26 @@ class _SettingsPageState extends State<SettingsPage> {
             builder: (_) => PinDisablePage(appLock: widget.appLock)),
       );
       if (result == true && mounted) {
-        setState(() => _lockEnabled = false);
+        setState(() {
+          _lockEnabled = false;
+          _biometricEnabled = false; // disabling the PIN clears this too
+        });
       }
+    }
+  }
+
+  Future<void> _toggleBiometric(bool enable) async {
+    if (enable) {
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+            builder: (_) => BiometricEnablePage(appLock: widget.appLock)),
+      );
+      if (result == true && mounted) {
+        setState(() => _biometricEnabled = true);
+      }
+    } else {
+      await widget.appLock.disableBiometric();
+      if (mounted) setState(() => _biometricEnabled = false);
     }
   }
 
@@ -104,6 +128,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   value: _lockEnabled,
                   onChanged: _toggleLock,
                 ),
+                if (_lockEnabled && _biometricAvailable)
+                  SwitchListTile(
+                    title: Text(l10n.settingsBiometricUnlock),
+                    subtitle: Text(l10n.settingsBiometricUnlockSubtitle),
+                    value: _biometricEnabled,
+                    onChanged: _toggleBiometric,
+                  ),
               ],
             ),
     );

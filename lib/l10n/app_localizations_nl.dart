@@ -177,4 +177,17 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get unblock => 'Deblokkeren';
+
+  @override
+  String get settingsBiometricUnlock => 'Ontgrendelen met vingerafdruk/gezicht';
+
+  @override
+  String get settingsBiometricUnlockSubtitle =>
+      'Een snellere manier dan je pincode typen — de pincode beschermt je data nog steeds echt';
+
+  @override
+  String get useFingerprint => 'Vingerafdruk gebruiken';
+
+  @override
+  String get biometricUnlockReason => 'Ontgrendel PrivacyChat';
 }

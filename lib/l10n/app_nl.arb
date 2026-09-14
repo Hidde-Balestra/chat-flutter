@@ -73,5 +73,10 @@
     }
   },
   "blockedBanner": "Je hebt dit contact geblokkeerd. Diegene kan je niet meer berichten.",
-  "unblock": "Deblokkeren"
+  "unblock": "Deblokkeren",
+
+  "settingsBiometricUnlock": "Ontgrendelen met vingerafdruk/gezicht",
+  "settingsBiometricUnlockSubtitle": "Een snellere manier dan je pincode typen — de pincode beschermt je data nog steeds echt",
+  "useFingerprint": "Vingerafdruk gebruiken",
+  "biometricUnlockReason": "Ontgrendel PrivacyChat"
 }

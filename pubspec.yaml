@@ -25,6 +25,7 @@ dependencies:
     sdk: flutter
   intl: ^0.20.3
   shared_preferences: ^2.5.5
+  local_auth: ^3.0.2
 
 dev_dependencies:
   flutter_test:
@@ -32,6 +33,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.13.1
   flutter_secure_storage_platform_interface: ^1.1.2
+  local_auth_platform_interface: ^1.1.0
 
 flutter:
   uses-material-design: true

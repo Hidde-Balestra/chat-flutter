@@ -175,4 +175,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unblock => 'Unblock';
+
+  @override
+  String get settingsBiometricUnlock => 'Unlock with fingerprint/face';
+
+  @override
+  String get settingsBiometricUnlockSubtitle =>
+      'A faster stand-in for typing your PIN — the PIN is still what actually protects your data';
+
+  @override
+  String get useFingerprint => 'Use fingerprint';
+
+  @override
+  String get biometricUnlockReason => 'Unlock PrivacyChat';
 }

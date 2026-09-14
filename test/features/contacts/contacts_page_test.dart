@@ -10,6 +10,7 @@ import 'package:privacychat/features/contacts/contacts_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/messaging/fakes.dart';
+import '../../test_helpers/fake_local_auth.dart';
 import '../../test_helpers/fake_secure_storage.dart';
 import '../../test_helpers/localized_test_app.dart';
 
@@ -22,6 +23,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     installFakeSecureStorage();
+    installFakeLocalAuth();
   });
 
   group('ContactsPage', () {

@@ -73,5 +73,10 @@
     }
   },
   "blockedBanner": "You've blocked this contact. They can no longer message you.",
-  "unblock": "Unblock"
+  "unblock": "Unblock",
+
+  "settingsBiometricUnlock": "Unlock with fingerprint/face",
+  "settingsBiometricUnlockSubtitle": "A faster stand-in for typing your PIN — the PIN is still what actually protects your data",
+  "useFingerprint": "Use fingerprint",
+  "biometricUnlockReason": "Unlock PrivacyChat"
 }

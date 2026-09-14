@@ -107,8 +107,11 @@ class _PinInputState extends State<_PinInput> {
 
 /// Shown at app launch when app-lock is enabled. Used as root content (not
 /// pushed as a route — there's nothing to pop back to yet), so it reports
-/// success via [onUnlocked] instead of Navigator.pop.
-class PinUnlockPage extends StatelessWidget {
+/// success via [onUnlocked] instead of Navigator.pop. If biometric unlock
+/// is set up, it's attempted automatically as soon as this page appears,
+/// with the PIN field always available as a fallback (cancelled/failed
+/// biometrics, or the user just prefers typing).
+class PinUnlockPage extends StatefulWidget {
   const PinUnlockPage(
       {super.key, required this.appLock, required this.onUnlocked});
 
@@ -116,21 +119,68 @@ class PinUnlockPage extends StatelessWidget {
   final void Function(String passphrase) onUnlocked;
 
   @override
+  State<PinUnlockPage> createState() => _PinUnlockPageState();
+}
+
+class _PinUnlockPageState extends State<PinUnlockPage> {
+  bool _biometricAvailable = false;
+  bool _biometricAttempting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tryBiometricOnLaunch();
+  }
+
+  Future<void> _tryBiometricOnLaunch() async {
+    final enabled = await widget.appLock.isBiometricEnabled;
+    if (!mounted) return;
+    setState(() => _biometricAvailable = enabled);
+    if (enabled) {
+      await _attemptBiometric();
+    }
+  }
+
+  Future<void> _attemptBiometric() async {
+    if (!mounted) return;
+    setState(() => _biometricAttempting = true);
+    final passphrase = await widget.appLock.unlockWithBiometric(
+      reason: AppLocalizations.of(context)!.biometricUnlockReason,
+    );
+    if (!mounted) return;
+    setState(() => _biometricAttempting = false);
+    if (passphrase != null) {
+      widget.onUnlocked(passphrase);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Center(
-        child: _PinInput(
-          title: l10n.settingsAppLockUnlockTitle,
-          submitLabel: l10n.unlockAction,
-          onSubmit: (pin) async {
-            final passphrase = await appLock.unlock(pin);
-            if (passphrase == null) {
-              return l10n.settingsAppLockWrongPin;
-            }
-            onUnlocked(passphrase);
-            return null;
-          },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _PinInput(
+              title: l10n.settingsAppLockUnlockTitle,
+              submitLabel: l10n.unlockAction,
+              onSubmit: (pin) async {
+                final passphrase = await widget.appLock.unlock(pin);
+                if (passphrase == null) {
+                  return l10n.settingsAppLockWrongPin;
+                }
+                widget.onUnlocked(passphrase);
+                return null;
+              },
+            ),
+            if (_biometricAvailable)
+              TextButton.icon(
+                onPressed: _biometricAttempting ? null : _attemptBiometric,
+                icon: const Icon(Icons.fingerprint),
+                label: Text(l10n.useFingerprint),
+              ),
+          ],
         ),
       ),
     );
@@ -181,6 +231,39 @@ class _PinSetupPageState extends State<PinSetupPage> {
                   return null;
                 },
               ),
+      ),
+    );
+  }
+}
+
+/// Confirms the current PIN before turning on biometric unlock. Pops `true`
+/// once [AppLockController.enableBiometric] has succeeded.
+class BiometricEnablePage extends StatelessWidget {
+  const BiometricEnablePage({super.key, required this.appLock});
+
+  final AppLockController appLock;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.settingsBiometricUnlock)),
+      body: Center(
+        child: _PinInput(
+          title: l10n.settingsAppLockUnlockTitle,
+          submitLabel: l10n.unlockAction,
+          onSubmit: (pin) async {
+            try {
+              await appLock.enableBiometric(pin);
+            } on StateError {
+              return l10n.settingsAppLockWrongPin;
+            }
+            if (context.mounted) {
+              Navigator.of(context).pop(true);
+            }
+            return null;
+          },
+        ),
       ),
     );
   }

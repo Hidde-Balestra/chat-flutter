@@ -409,6 +409,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unblock'**
   String get unblock;
+
+  /// No description provided for @settingsBiometricUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with fingerprint/face'**
+  String get settingsBiometricUnlock;
+
+  /// No description provided for @settingsBiometricUnlockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A faster stand-in for typing your PIN — the PIN is still what actually protects your data'**
+  String get settingsBiometricUnlockSubtitle;
+
+  /// No description provided for @useFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use fingerprint'**
+  String get useFingerprint;
+
+  /// No description provided for @biometricUnlockReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock PrivacyChat'**
+  String get biometricUnlockReason;
 }
 
 class _AppLocalizationsDelegate
