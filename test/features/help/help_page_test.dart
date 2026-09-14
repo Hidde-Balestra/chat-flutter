@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:privacychat/features/help/help_page.dart';
 
@@ -13,6 +14,13 @@ void main() {
       expect(find.text('Hoe werkt de app?'), findsOneWidget);
       expect(find.text('Wat is PrivacyChat?'), findsOneWidget);
       expect(find.text('Jouw Account ID'), findsOneWidget);
+
+      // The last topic is off-screen until scrolled to.
+      await tester.scrollUntilVisible(
+        find.text('Belangrijk: app verwijderd of nieuwe telefoon?'),
+        200,
+        scrollable: find.byType(Scrollable),
+      );
       expect(find.text('Belangrijk: app verwijderd of nieuwe telefoon?'),
           findsOneWidget);
 

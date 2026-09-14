@@ -1,10 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'app_config.dart';
 import 'core/api/http_chat_backend.dart';
 import 'core/messaging/session_manager.dart';
+import 'core/network/platform_tor_service.dart';
+import 'core/network/tor_http_client.dart';
+import 'core/network/tor_service.dart';
 import 'core/security/app_lock_controller.dart';
 import 'core/settings/locale_controller.dart';
 import 'core/storage/app_database.dart';
@@ -107,7 +111,17 @@ class _StartupPageState extends State<StartupPage> {
       final identity = await SecureIdentityStore().loadOrCreate();
       final database = await AppDatabase.open(passphrase: passphrase);
       final store = SqliteLocalStore(database);
-      final backend = HttpChatBackend(baseUrl: Uri.parse(backendBaseUrl));
+
+      // The app has no non-Tor networking path: every request the backend
+      // ever sees arrives over Tor, so it never learns the device's real
+      // IP address. Requests made before Tor finishes connecting simply
+      // wait — same offline-first spirit as the rest of this flow.
+      final torService = PlatformTorService();
+      unawaited(torService.start());
+      final backend = HttpChatBackend(
+        baseUrl: Uri.parse(backendBaseUrl),
+        client: TorHttpClient(torService),
+      );
       final sessionManager =
           SessionManager(identity: identity, backend: backend, store: store);
 
@@ -118,7 +132,11 @@ class _StartupPageState extends State<StartupPage> {
 
       if (!mounted) return;
       setState(() {
-        _session = _Session(sessionManager: sessionManager, store: store);
+        _session = _Session(
+          sessionManager: sessionManager,
+          store: store,
+          torStatus: torService.status,
+        );
         _stage = _Stage.ready;
       });
     } catch (e) {
@@ -165,16 +183,22 @@ class _StartupPageState extends State<StartupPage> {
           store: session.store,
           localeController: widget.localeController,
           appLock: _appLock,
+          torStatus: session.torStatus,
         );
     }
   }
 }
 
 class _Session {
-  _Session({required this.sessionManager, required this.store});
+  _Session({
+    required this.sessionManager,
+    required this.store,
+    required this.torStatus,
+  });
 
   final SessionManager sessionManager;
   final SqliteLocalStore store;
+  final ValueListenable<TorStatus> torStatus;
 }
 
 class _StartupError extends StatelessWidget {

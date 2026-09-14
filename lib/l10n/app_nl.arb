@@ -107,5 +107,17 @@
   "helpDelayBody": "De app checkt elke paar seconden zelf even of er nieuwe berichten voor je klaarstaan, in plaats van dat de server je actief waarschuwt. Dat is expres zo gebouwd, zodat de server zo min mogelijk over jou hoeft te weten. Een bericht is meestal binnen 1 à 2 seconden zichtbaar als je het gesprek open hebt staan.",
 
   "helpLostAccessTitle": "Belangrijk: app verwijderd of nieuwe telefoon?",
-  "helpLostAccessBody": "Er is op dit moment geen manier om je account terug te zetten op een ander toestel. Verwijder je de app, of ben je je telefoon kwijt, dan ben je ook de toegang tot je gesprekken en je Account ID kwijt, en moet je (en je contacten) opnieuw beginnen. Wees dus voorzichtig met verwijderen."
+  "helpLostAccessBody": "Er is op dit moment geen manier om je account terug te zetten op een ander toestel. Verwijder je de app, of ben je je telefoon kwijt, dan ben je ook de toegang tot je gesprekken en je Account ID kwijt, en moet je (en je contacten) opnieuw beginnen. Wees dus voorzichtig met verwijderen.",
+
+  "torConnecting": "Verbinden via Tor… {percent}%",
+  "@torConnecting": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "torConnected": "Verbonden via Tor",
+  "torFailed": "Tor-verbinding mislukt — opnieuw proberen…",
+
+  "helpTorTitle": "Waarom moet ik eerst \"verbinden via Tor\" wachten?",
+  "helpTorBody": "Deze app stuurt al je verkeer via Tor, een wereldwijd netwerk van vrijwillige servers dat je IP-adres verbergt door je verbinding via een paar tussenstations om te leiden. Daardoor kan de server nooit zien vanaf welke plek of welk toestel jij verbindt. Dit gebeurt automatisch, elke keer dat je de app opent — je hoeft er niets voor te doen, alleen even wachten tot het pictogram bovenin verandert van een laadcirkel naar een schildje."
 }

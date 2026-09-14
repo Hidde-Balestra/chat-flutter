@@ -553,6 +553,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There is currently no way to restore your account on another device. If you delete the app, or lose your phone, you also lose access to your conversations and your Account ID, and you (and your contacts) will need to start over. So be careful before deleting it.'**
   String get helpLostAccessBody;
+
+  /// No description provided for @torConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting via Tor… {percent}%'**
+  String torConnecting(int percent);
+
+  /// No description provided for @torConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected via Tor'**
+  String get torConnected;
+
+  /// No description provided for @torFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Tor connection failed — retrying…'**
+  String get torFailed;
+
+  /// No description provided for @helpTorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why do I have to wait for \"connecting via Tor\"?'**
+  String get helpTorTitle;
+
+  /// No description provided for @helpTorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This app sends all its traffic through Tor, a worldwide network of volunteer-run servers that hides your IP address by routing your connection through a few relays. Because of that, the server can never see where or which device you\'re connecting from. This happens automatically every time you open the app — you don\'t need to do anything, just wait for the icon at the top to change from a loading circle to a shield.'**
+  String get helpTorBody;
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,7 @@ class HelpPage extends StatelessWidget {
       _HelpTopic(l10n.helpAddContactTitle, l10n.helpAddContactBody),
       _HelpTopic(l10n.helpRequestsTitle, l10n.helpRequestsBody),
       _HelpTopic(l10n.helpSecurityTitle, l10n.helpSecurityBody),
+      _HelpTopic(l10n.helpTorTitle, l10n.helpTorBody),
       _HelpTopic(l10n.helpLockTitle, l10n.helpLockBody),
       _HelpTopic(l10n.helpDelayTitle, l10n.helpDelayBody),
       _HelpTopic(l10n.helpLostAccessTitle, l10n.helpLostAccessBody),

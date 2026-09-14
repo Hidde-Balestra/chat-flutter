@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/messaging/session_manager.dart';
+import '../../core/network/tor_service.dart';
 import '../../core/security/app_lock_controller.dart';
 import '../../core/settings/locale_controller.dart';
 import '../../core/storage/local_store.dart';
@@ -17,12 +19,17 @@ class ContactsPage extends StatefulWidget {
     required this.store,
     required this.localeController,
     required this.appLock,
+    this.torStatus,
   });
 
   final SessionManager sessionManager;
   final LocalStore store;
   final LocaleController localeController;
   final AppLockController appLock;
+
+  /// Null in contexts (like most tests) that don't care about Tor status —
+  /// when present, a small indicator is shown in the app bar.
+  final ValueListenable<TorStatus>? torStatus;
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
@@ -232,6 +239,7 @@ class _ContactsPageState extends State<ContactsPage> {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          if (widget.torStatus != null) _TorStatusIndicator(widget.torStatus!),
           IconButton(
             icon: const Icon(Icons.badge_outlined),
             tooltip: l10n.myAccountId,
@@ -310,6 +318,60 @@ class _ContactsPageState extends State<ContactsPage> {
   String _shorten(String accountId) => accountId.length > 16
       ? '${accountId.substring(0, 8)}…${accountId.substring(accountId.length - 6)}'
       : accountId;
+}
+
+/// A small always-visible app-bar indicator of the mandatory Tor
+/// connection: a spinner with a percentage while bootstrapping, a plain
+/// onion icon once connected, and a warning icon if it failed. There's no
+/// "skip Tor" option — this only ever reflects status, it can't turn it off.
+class _TorStatusIndicator extends StatelessWidget {
+  const _TorStatusIndicator(this.torStatus);
+
+  final ValueListenable<TorStatus> torStatus;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return ValueListenableBuilder<TorStatus>(
+      valueListenable: torStatus,
+      builder: (context, status, _) {
+        switch (status.state) {
+          case TorConnectionState.connecting:
+            return IconButton(
+              tooltip: l10n.torConnecting(status.percent),
+              icon: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  value: status.percent / 100,
+                ),
+              ),
+              onPressed: () =>
+                  _showStatus(context, l10n.torConnecting(status.percent)),
+            );
+          case TorConnectionState.connected:
+            return IconButton(
+              tooltip: l10n.torConnected,
+              icon: const Icon(Icons.security),
+              onPressed: () => _showStatus(context, l10n.torConnected),
+            );
+          case TorConnectionState.failed:
+            return IconButton(
+              tooltip: l10n.torFailed,
+              icon: Icon(Icons.warning_amber,
+                  color: Theme.of(context).colorScheme.error),
+              onPressed: () => _showStatus(context, l10n.torFailed),
+            );
+        }
+      },
+    );
+  }
+
+  void _showStatus(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
 }
 
 class _SectionHeader extends StatelessWidget {

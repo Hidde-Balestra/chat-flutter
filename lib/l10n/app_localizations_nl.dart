@@ -260,4 +260,23 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get helpLostAccessBody =>
       'Er is op dit moment geen manier om je account terug te zetten op een ander toestel. Verwijder je de app, of ben je je telefoon kwijt, dan ben je ook de toegang tot je gesprekken en je Account ID kwijt, en moet je (en je contacten) opnieuw beginnen. Wees dus voorzichtig met verwijderen.';
+
+  @override
+  String torConnecting(int percent) {
+    return 'Verbinden via Tor… $percent%';
+  }
+
+  @override
+  String get torConnected => 'Verbonden via Tor';
+
+  @override
+  String get torFailed => 'Tor-verbinding mislukt — opnieuw proberen…';
+
+  @override
+  String get helpTorTitle =>
+      'Waarom moet ik eerst \"verbinden via Tor\" wachten?';
+
+  @override
+  String get helpTorBody =>
+      'Deze app stuurt al je verkeer via Tor, een wereldwijd netwerk van vrijwillige servers dat je IP-adres verbergt door je verbinding via een paar tussenstations om te leiden. Daardoor kan de server nooit zien vanaf welke plek of welk toestel jij verbindt. Dit gebeurt automatisch, elke keer dat je de app opent — je hoeft er niets voor te doen, alleen even wachten tot het pictogram bovenin verandert van een laadcirkel naar een schildje.';
 }

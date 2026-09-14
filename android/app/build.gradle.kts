@@ -53,6 +53,33 @@ android {
             signingConfig = signingConfigs.getByName("alpha")
         }
     }
+
+    // The tor-android artifact below ships its native tor binaries as plain
+    // <abi>/libtor.so entries in a jar, not in the lib/<abi>/*.so layout the
+    // Android Gradle Plugin auto-extracts from a normal dependency. Feeding
+    // that extracted folder in as an extra jniLibs source dir (further down)
+    // is what actually gets libtor.so packaged into the APK per-ABI.
+    sourceSets {
+        getByName("main").jniLibs.srcDir(layout.buildDirectory.dir("torBinaries"))
+    }
+}
+
+// Isolated from the main `dependencies {}` block: this is a binary payload
+// to unpack, not a library to compile/link against.
+val torBinaries: Configuration by configurations.creating
+
+dependencies {
+    torBinaries("org.briarproject:tor-android:0.4.9.12")
+}
+
+val extractTorBinaries by tasks.registering(Copy::class) {
+    from(torBinaries.map { zipTree(it) })
+    include("**/libtor.so")
+    into(layout.buildDirectory.dir("torBinaries"))
+}
+
+tasks.named("preBuild") {
+    dependsOn(extractTorBinaries)
 }
 
 kotlin {

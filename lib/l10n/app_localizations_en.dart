@@ -258,4 +258,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpLostAccessBody =>
       'There is currently no way to restore your account on another device. If you delete the app, or lose your phone, you also lose access to your conversations and your Account ID, and you (and your contacts) will need to start over. So be careful before deleting it.';
+
+  @override
+  String torConnecting(int percent) {
+    return 'Connecting via Tor… $percent%';
+  }
+
+  @override
+  String get torConnected => 'Connected via Tor';
+
+  @override
+  String get torFailed => 'Tor connection failed — retrying…';
+
+  @override
+  String get helpTorTitle =>
+      'Why do I have to wait for \"connecting via Tor\"?';
+
+  @override
+  String get helpTorBody =>
+      'This app sends all its traffic through Tor, a worldwide network of volunteer-run servers that hides your IP address by routing your connection through a few relays. Because of that, the server can never see where or which device you\'re connecting from. This happens automatically every time you open the app — you don\'t need to do anything, just wait for the icon at the top to change from a loading circle to a shield.';
 }

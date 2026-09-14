@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/messaging/fakes.dart';
 import '../../test_helpers/fake_local_auth.dart';
 import '../../test_helpers/fake_secure_storage.dart';
+import '../../test_helpers/fake_tor_service.dart';
 import '../../test_helpers/localized_test_app.dart';
 
 // Tiny on purpose — see settings_page_test.dart for why: the real 210k-
@@ -197,6 +198,36 @@ void main() {
 
       expect(await store.getContact(friendId), isNull);
       expect(find.text('Vriend'), findsNothing);
+    });
+
+    testWidgets(
+        'shows a Tor connection indicator that updates as it bootstraps',
+        (tester) async {
+      final server = FakeServer();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      final torService = FakeTorService();
+
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: InMemoryLocalStore(),
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+        torStatus: torService.status,
+      )));
+      await tester.pump();
+
+      expect(find.byIcon(Icons.security), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsWidgets);
+
+      torService.setConnected();
+      await tester.pump();
+
+      expect(find.byIcon(Icons.security), findsOneWidget);
     });
   });
 }

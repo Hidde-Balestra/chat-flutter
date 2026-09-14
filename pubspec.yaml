@@ -26,6 +26,7 @@ dependencies:
   intl: ^0.20.3
   shared_preferences: ^2.5.5
   local_auth: ^3.0.2
+  socks5_proxy: ^2.1.1
 
 dev_dependencies:
   flutter_test:
