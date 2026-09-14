@@ -127,6 +127,14 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
 
   void _forceRelock() {
     if (!mounted) return;
+    // Without this, a screen pushed on top of the contacts list (an open
+    // ChatPage, Settings, ...) stays exactly where it was: rebuilding
+    // StartupPage only swaps what route "/" itself shows underneath, it
+    // doesn't touch routes already pushed above it. The user would keep
+    // looking at (and being able to use) the old screen, still holding a
+    // live reference to the very session this is supposed to drop, until
+    // they happened to navigate back down to "/" on their own.
+    Navigator.of(context).popUntil((route) => route.isFirst);
     setState(() {
       _session = null;
       _stage = _Stage.needsPin;
@@ -140,6 +148,9 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
   /// decrypted lingers in memory. Next launch requires the PIN again,
   /// exactly like any other cold start with app-lock enabled.
   void _lockNow() {
+    // Same reasoning as _forceRelock: pop back to "/" first, in case
+    // SystemNavigator.pop() doesn't tear the process down immediately.
+    Navigator.of(context).popUntil((route) => route.isFirst);
     setState(() {
       _session = null;
       _stage = _Stage.needsPin;

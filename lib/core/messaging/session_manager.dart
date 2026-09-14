@@ -124,6 +124,15 @@ class SessionManager {
   }
 
   Future<void> sendMessage(String contactAccountId, String text) async {
+    // A defense-in-depth check, not the primary UX for this: callers (e.g.
+    // ChatPage) should already call ensureBootstrapped() themselves first
+    // and show a friendly "still connecting" message rather than ever
+    // reaching this exception — see its doc comment for why this can be
+    // false even after the app has been open for a while (Tor bootstrap,
+    // no connectivity yet, etc).
+    if (!await ensureBootstrapped()) {
+      throw StateError('not connected yet — try again once connected');
+    }
     final myAccountId = await accountId;
     var session = await _store.loadSession(contactAccountId);
     final plaintext = utf8.encode(text);

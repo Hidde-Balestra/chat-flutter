@@ -367,6 +367,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contactAccountIdTitle => 'This contact\'s Account ID';
 
   @override
+  String get stillConnecting =>
+      'Still connecting — try again in a few seconds.';
+
+  @override
   String get helpContactOptionsTitle =>
       'Blocking a contact or deleting the conversation';
 

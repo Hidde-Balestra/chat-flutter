@@ -257,5 +257,22 @@ void main() {
       expect(laterMessages.map((m) => m.body),
           contains('derde bericht, na deblokkeren'));
     });
+
+    test(
+        'sendMessage refuses with a clear error if bootstrap never '
+        'succeeded, instead of failing deep inside with a confusing '
+        '"not authenticated" error', () async {
+      final alice = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: UnreachableChatBackend(),
+        store: InMemoryLocalStore(),
+      );
+
+      expect(
+        () => alice.sendMessage('05${'77' * 32}', 'hallo?'),
+        throwsA(isA<StateError>().having(
+            (e) => e.message, 'message', contains('not connected yet'))),
+      );
+    });
   });
 }

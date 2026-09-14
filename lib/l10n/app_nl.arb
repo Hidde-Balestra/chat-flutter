@@ -158,6 +158,7 @@
 
   "viewAccountId": "Account ID bekijken",
   "contactAccountIdTitle": "Account ID van dit contact",
+  "stillConnecting": "Nog aan het verbinden — probeer het over een paar seconden opnieuw.",
 
   "helpContactOptionsTitle": "Een contact blokkeren of het gesprek verwijderen",
   "helpContactOptionsBody": "Tik in een open gesprek boven op de naam van je contact. Daar kun je diegene een naam geven, blokkeren of het hele gesprek verwijderen.",

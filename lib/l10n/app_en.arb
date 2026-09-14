@@ -158,6 +158,7 @@
 
   "viewAccountId": "View Account ID",
   "contactAccountIdTitle": "This contact's Account ID",
+  "stillConnecting": "Still connecting — try again in a few seconds.",
 
   "helpContactOptionsTitle": "Blocking a contact or deleting the conversation",
   "helpContactOptionsBody": "In an open conversation, tap your contact's name at the top. From there you can give them a name, block them, or delete the whole conversation.",

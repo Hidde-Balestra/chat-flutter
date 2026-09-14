@@ -206,6 +206,51 @@ class FakeChatBackend implements ChatBackend {
   }
 }
 
+/// A [ChatBackend] that can never reach the network — every call throws,
+/// simulating "bootstrap hasn't succeeded yet" (e.g. Tor still connecting).
+class UnreachableChatBackend implements ChatBackend {
+  @override
+  Future<String> registerAccount({
+    required SimplePublicKey identitySigningKey,
+    required SimplePublicKey identityAgreementKey,
+    required SimplePublicKey signedPreKey,
+    required List<int> signedPreKeySignature,
+    required int signedPreKeyId,
+  }) =>
+      throw Exception('no connection');
+
+  @override
+  Future<List<int>> requestAuthChallenge(String accountId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> verifyAuthChallenge(String accountId, List<int> signature) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> uploadOneTimePreKeys(Map<int, SimplePublicKey> prekeysById) =>
+      throw UnimplementedError();
+
+  @override
+  Future<RemotePreKeyBundle> fetchPrekeyBundle(String accountId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<int> postEnvelope({
+    required String recipientAccountId,
+    required String envelopeType,
+    required List<int> ciphertext,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<MailboxEnvelope>> pollMailbox() => throw UnimplementedError();
+
+  @override
+  Future<void> ackEnvelopes(List<int> envelopeIds) =>
+      throw UnimplementedError();
+}
+
 class InMemoryLocalStore implements LocalStore {
   final Map<String, ContactRecord> _contacts = {};
   final List<MessageRecord> _messages = [];

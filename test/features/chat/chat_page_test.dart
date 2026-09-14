@@ -271,5 +271,34 @@ void main() {
       expect(await store.getContact(contactId), isNull);
       expect(find.text('open'), findsOneWidget); // popped back
     });
+
+    testWidgets(
+        'shows a plain "still connecting" message instead of a raw error '
+        'when bootstrap has not succeeded yet', (tester) async {
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: UnreachableChatBackend(),
+        store: InMemoryLocalStore(),
+      );
+      final contactId = '05${'77' * 32}';
+
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+          sessionManager: me,
+          store: InMemoryLocalStore(),
+          contactAccountId: contactId)));
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField), 'hoi');
+      await tester.tap(find.byIcon(Icons.send));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(
+          find.text('Nog aan het verbinden — probeer het over een paar '
+              'seconden opnieuw.'),
+          findsOneWidget);
+      // The typed text is kept, not silently discarded.
+      expect(find.text('hoi'), findsOneWidget);
+    });
   });
 }

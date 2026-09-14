@@ -728,6 +728,12 @@ abstract class AppLocalizations {
   /// **'This contact\'s Account ID'**
   String get contactAccountIdTitle;
 
+  /// No description provided for @stillConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Still connecting — try again in a few seconds.'**
+  String get stillConnecting;
+
   /// No description provided for @helpContactOptionsTitle.
   ///
   /// In en, this message translates to:

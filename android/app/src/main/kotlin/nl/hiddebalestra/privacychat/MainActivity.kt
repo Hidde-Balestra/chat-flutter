@@ -12,6 +12,22 @@ class MainActivity : FlutterFragmentActivity() {
     private val torController by lazy { TorController(applicationContext) }
     private var torEventSink: EventChannel.EventSink? = null
 
+    // TorController.start() is a one-shot no-op once tor is already
+    // running (see its `running` guard), so it never re-fires onProgress/
+    // onConnected for a *second* caller. Without replaying the last known
+    // status to a freshly-attached listener, a new PlatformTorService
+    // created after "lock now"/auto-lock (which drops the old Dart-side
+    // instance but leaves this native controller and its already-running
+    // tor process alone) would wait forever: its status never updates and
+    // its socksPort future never completes, silently breaking networking
+    // until the whole app process is killed and relaunched.
+    private var lastStatus: Map<String, Any>? = null
+
+    private fun emitStatus(status: Map<String, Any>) {
+        lastStatus = status
+        runOnUiThread { torEventSink?.success(status) }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
@@ -21,21 +37,15 @@ class MainActivity : FlutterFragmentActivity() {
                     "start" -> {
                         torController.start(
                             onProgress = { percent ->
-                                runOnUiThread {
-                                    torEventSink?.success(mapOf("state" to "connecting", "percent" to percent))
-                                }
+                                emitStatus(mapOf("state" to "connecting", "percent" to percent))
                             },
                             onConnected = {
-                                runOnUiThread {
-                                    torEventSink?.success(
-                                        mapOf("state" to "connected", "percent" to 100, "socksPort" to TorController.SOCKS_PORT)
-                                    )
-                                }
+                                emitStatus(
+                                    mapOf("state" to "connected", "percent" to 100, "socksPort" to TorController.SOCKS_PORT)
+                                )
                             },
                             onError = { message ->
-                                runOnUiThread {
-                                    torEventSink?.success(mapOf("state" to "failed", "message" to message))
-                                }
+                                emitStatus(mapOf("state" to "failed", "message" to message))
                             },
                         )
                         result.success(null)
@@ -64,6 +74,7 @@ class MainActivity : FlutterFragmentActivity() {
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     torEventSink = events
+                    lastStatus?.let { events?.success(it) }
                 }
 
                 override fun onCancel(arguments: Any?) {

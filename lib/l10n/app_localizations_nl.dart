@@ -369,6 +369,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get contactAccountIdTitle => 'Account ID van dit contact';
 
   @override
+  String get stillConnecting =>
+      'Nog aan het verbinden — probeer het over een paar seconden opnieuw.';
+
+  @override
   String get helpContactOptionsTitle =>
       'Een contact blokkeren of het gesprek verwijderen';
 

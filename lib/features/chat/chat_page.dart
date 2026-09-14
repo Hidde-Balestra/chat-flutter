@@ -89,8 +89,22 @@ class _ChatPageState extends State<ChatPage> {
     if (text.isEmpty || _sending) return;
 
     setState(() => _sending = true);
-    _controller.clear();
     try {
+      // Checked up front, before clearing the box: bootstrapping (which
+      // now also waits on Tor) can still be in progress right after
+      // launch, and failing this silently-but-instantly with a raw
+      // "not authenticated yet" exception was confusing — this shows a
+      // plain-language reason instead and leaves the typed text in place.
+      if (!await widget.sessionManager.ensureBootstrapped()) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(AppLocalizations.of(context)!.stillConnecting)),
+          );
+        }
+        return;
+      }
+      _controller.clear();
       await widget.sessionManager.sendMessage(widget.contactAccountId, text);
       await _refresh();
     } catch (e) {
