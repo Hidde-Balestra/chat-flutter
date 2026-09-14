@@ -29,11 +29,28 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("alpha") {
+            // A committed, stable self-signed key — NOT the Android Gradle
+            // Plugin's auto-generated debug keystore, which gets freshly
+            // (re)generated on every clean CI machine. Signing every release
+            // build with a *different* random key meant every APK update
+            // was rejected by Android as a signature mismatch, forcing a
+            // full uninstall before each new install.
+            // TODO before any real/production distribution: replace this
+            // with a securely stored release keystore (e.g. via GitHub
+            // Actions secrets), not one committed to the repo.
+            storeFile = file("keystore/alpha.jks")
+            storePassword = "privacychat"
+            keyAlias = "privacychatalpha"
+            keyPassword = "privacychat"
+            storeType = "PKCS12"
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("alpha")
         }
     }
 }
