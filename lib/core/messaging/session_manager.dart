@@ -55,7 +55,11 @@ class SessionManager {
     try {
       await bootstrap();
       return true;
-    } catch (_) {
+    } catch (e, stackTrace) {
+      // Silently swallowed otherwise, which made a persistently-failing
+      // bootstrap (as opposed to "just not online yet") indistinguishable
+      // from the ordinary case — visible via `flutter logs` / adb logcat.
+      debugPrint('privacychat: bootstrap failed, will retry: $e\n$stackTrace');
       return false;
     }
   }
