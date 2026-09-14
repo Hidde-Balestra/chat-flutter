@@ -117,6 +117,7 @@ class _StatusCard extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: color),
         title: Text(text),
+        subtitle: status.error == null ? null : Text(status.error!),
       ),
     );
   }

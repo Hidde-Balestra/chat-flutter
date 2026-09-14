@@ -54,6 +54,19 @@ android {
         }
     }
 
+    // Modern Android (API 23+) defaults to keeping native libraries
+    // compressed inside the APK and mapping them via mmap instead of
+    // extracting them to nativeLibraryDir as real files on disk. That's
+    // fine for a normal JNI .so loaded with System.loadLibrary(), but
+    // TorController spawns libtor.so as a plain child process via
+    // ProcessBuilder, which needs an actual file to exec — without this,
+    // nativeLibraryDir + "/libtor.so" doesn't exist and tor never starts.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     // The tor-android artifact below ships its native tor binaries as plain
     // <abi>/libtor.so entries in a jar, not in the lib/<abi>/*.so layout the
     // Android Gradle Plugin auto-extracts from a normal dependency. Feeding
