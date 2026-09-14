@@ -108,5 +108,68 @@ void main() {
       final inbox = await carolStore.messagesWith(await bob.accountId);
       expect(inbox.single.body, 'hallo carol, dit is bob');
     });
+
+    test('sending to an unknown account id fails instead of silently dropping',
+        () async {
+      final server = FakeServer();
+      final alice = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await alice.bootstrap();
+
+      expect(
+        () => alice.sendMessage('05${'00' * 32}', 'hallo?'),
+        throwsA(anything),
+      );
+    });
+
+    test('polling an empty mailbox is a no-op', () async {
+      final server = FakeServer();
+      final bob = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await bob.bootstrap();
+
+      final updates = await bob.pollAndDecrypt();
+
+      expect(updates, isEmpty);
+    });
+
+    test('bootstrap is idempotent — calling it twice does not break sending',
+        () async {
+      final server = FakeServer();
+      final aliceIdentity = await IdentityKeyPair.generateRandom();
+      final bobIdentity = await IdentityKeyPair.generateRandom();
+      final bobStore = InMemoryLocalStore();
+
+      final alice = SessionManager(
+        identity: aliceIdentity,
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      final bob = SessionManager(
+          identity: bobIdentity,
+          backend: FakeChatBackend(server),
+          store: bobStore);
+
+      await bob.bootstrap();
+      await bob
+          .bootstrap(); // second call — must not corrupt the published signed prekey
+      await alice.bootstrap();
+
+      final bobId = await bob.accountId;
+      await alice.sendMessage(bobId, 'werkt dit nog?');
+      final aliceId = await alice.accountId;
+
+      final updates = await bob.pollAndDecrypt();
+
+      expect(updates, {aliceId});
+      expect(
+          (await bobStore.messagesWith(aliceId)).single.body, 'werkt dit nog?');
+    });
   });
 }

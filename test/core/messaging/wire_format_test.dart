@@ -80,5 +80,39 @@ void main() {
       expect(decoded.header.messageNumber, 5);
       expect(decoded.ciphertext, [10, 20, 30]);
     });
+
+    test('decodePrekeyMessage rejects a truncated byte array', () {
+      expect(
+          () => WireFormat.decodePrekeyMessage([1, 2, 3]), throwsArgumentError);
+    });
+
+    test('decodeNormalMessage rejects a truncated byte array', () {
+      expect(
+          () => WireFormat.decodeNormalMessage([1, 2, 3]), throwsArgumentError);
+    });
+
+    test('RatchetHeader.deserialize rejects anything other than 40 bytes', () {
+      expect(() => RatchetHeader.deserialize(List<int>.filled(39, 0)),
+          throwsArgumentError);
+      expect(() => RatchetHeader.deserialize(List<int>.filled(41, 0)),
+          throwsArgumentError);
+    });
+
+    test('RatchetHeader round-trips through serialize/deserialize directly',
+        () async {
+      final header = RatchetHeader(
+        dhPublicKey: await (await CryptoAlgorithms.x25519.newKeyPair())
+            .extractPublicKey(),
+        previousChainLength: 1000000,
+        messageNumber:
+            4294967295, // max uint32 — makes sure encoding doesn't truncate
+      );
+
+      final restored = RatchetHeader.deserialize(header.serialize());
+
+      expect(restored.dhPublicKey.bytes, header.dhPublicKey.bytes);
+      expect(restored.previousChainLength, 1000000);
+      expect(restored.messageNumber, 4294967295);
+    });
   });
 }
