@@ -119,5 +119,49 @@
   "torFailed": "Tor connection failed — retrying…",
 
   "helpTorTitle": "Why do I have to wait for \"connecting via Tor\"?",
-  "helpTorBody": "This app sends all its traffic through Tor, a worldwide network of volunteer-run servers that hides your IP address by routing your connection through a few relays. Because of that, the server can never see where or which device you're connecting from. This happens automatically every time you open the app — you don't need to do anything, just wait for the icon at the top to change from a loading circle to a shield."
+  "helpTorBody": "This app sends all its traffic through Tor, a worldwide network of volunteer-run servers that hides your IP address by routing your connection through a few relays. Because of that, the server can never see where or which device you're connecting from. This happens automatically every time you open the app — you don't need to do anything, just wait for the icon at the top to change from a loading circle to a shield.",
+
+  "settingsTorStatus": "Tor connection",
+  "settingsTorStatusSubtitle": "See whether you're connected, and which relays you're using",
+  "torStatusPageTitle": "Tor connection",
+  "torCircuitsTitle": "Active circuit",
+  "torCircuitsExplanation": "These are the relays your traffic is currently passing through, from you to the server.",
+  "torCircuitsRefresh": "Refresh",
+  "torCircuitsEmpty": "No active circuit found yet — try again in a few seconds.",
+  "torCircuitsError": "Couldn't fetch circuit info: {error}",
+  "@torCircuitsError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "torHopGuard": "Entry",
+  "torHopMiddle": "Middle",
+  "torHopExit": "Exit",
+  "torHopUnknownAddress": "address unknown",
+
+  "settingsAutoLock": "Auto-lock",
+  "settingsAutoLockSubtitle": "Lock the app on its own if you haven't used it for a while",
+  "autoLockPickerTitle": "Auto-lock after",
+  "autoLockNever": "Never",
+  "autoLockMinutes": "{minutes, plural, =1{1 minute} other{{minutes} minutes}}",
+  "@autoLockMinutes": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+
+  "settingsLockNow": "Lock now",
+  "settingsLockNowSubtitle": "Closes the app right away and asks for your PIN again next time",
+  "lockNowConfirmTitle": "Lock now?",
+  "lockNowConfirmMessage": "The app will close. Next time you'll need to enter your PIN (or fingerprint) again.",
+  "lockNowAction": "Lock",
+
+  "viewAccountId": "View Account ID",
+  "contactAccountIdTitle": "This contact's Account ID",
+
+  "helpContactOptionsTitle": "Blocking a contact or deleting the conversation",
+  "helpContactOptionsBody": "In an open conversation, tap your contact's name at the top. From there you can give them a name, block them, or delete the whole conversation.",
+
+  "helpAutoLockTitle": "Locking the app remotely or automatically",
+  "helpAutoLockBody": "Under Settings → Security you'll find \"Lock now\": it closes the app right away and asks for your PIN again next time. You can also set it to do that on its own after you haven't used the app for a while."
 }

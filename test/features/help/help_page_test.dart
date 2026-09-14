@@ -15,15 +15,6 @@ void main() {
       expect(find.text('Wat is PrivacyChat?'), findsOneWidget);
       expect(find.text('Jouw Account ID'), findsOneWidget);
 
-      // The last topic is off-screen until scrolled to.
-      await tester.scrollUntilVisible(
-        find.text('Belangrijk: app verwijderd of nieuwe telefoon?'),
-        200,
-        scrollable: find.byType(Scrollable),
-      );
-      expect(find.text('Belangrijk: app verwijderd of nieuwe telefoon?'),
-          findsOneWidget);
-
       // The first topic starts expanded, showing its body text.
       expect(
         find.textContaining('niemand — ook wij niet — kan meelezen'),
@@ -37,6 +28,15 @@ void main() {
         find.textContaining('Dit is een soort adres'),
         findsOneWidget,
       );
+
+      // The last topic is off-screen until scrolled to.
+      await tester.scrollUntilVisible(
+        find.text('Belangrijk: app verwijderd of nieuwe telefoon?'),
+        200,
+        scrollable: find.byType(Scrollable),
+      );
+      expect(find.text('Belangrijk: app verwijderd of nieuwe telefoon?'),
+          findsOneWidget);
     });
   });
 }

@@ -160,6 +160,139 @@ class _ChatPageState extends State<ChatPage> {
     setState(() => _status = ContactStatus.accepted);
   }
 
+  void _showAccountId() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.contactAccountIdTitle),
+        content: SelectableText(
+          widget.contactAccountId,
+          style: const TextStyle(fontFamily: 'monospace'),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text(l10n.close))
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showRenameDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: _displayName ?? '');
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.editName),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.editNameHint),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel)),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+    if (name == null) return;
+    await widget.store
+        .setDisplayName(widget.contactAccountId, name.isEmpty ? null : name);
+    if (!mounted) return;
+    setState(() => _displayName = name.isEmpty ? null : name);
+  }
+
+  Future<void> _confirmDeleteConversation() async {
+    final l10n = AppLocalizations.of(context)!;
+    final name = _displayName ?? _shorten(widget.contactAccountId);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteContactConfirmTitle),
+        content: Text(l10n.deleteContactConfirmMessage(name)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await widget.store.deleteContact(widget.contactAccountId);
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  }
+
+  void _showContactOptions() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.badge_outlined),
+              title: Text(l10n.viewAccountId),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _showAccountId();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: Text(l10n.editName),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _showRenameDialog();
+              },
+            ),
+            if (_status == ContactStatus.blocked)
+              ListTile(
+                leading: const Icon(Icons.block),
+                title: Text(l10n.unblock),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _unblock();
+                },
+              )
+            else
+              ListTile(
+                leading: const Icon(Icons.block),
+                title: Text(l10n.block),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _block();
+                },
+              ),
+            ListTile(
+              leading: Icon(Icons.delete_outline,
+                  color: Theme.of(context).colorScheme.error),
+              title: Text(l10n.deleteContact,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _confirmDeleteConversation();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -167,7 +300,10 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_displayName ?? _shorten(widget.contactAccountId)),
+        title: InkWell(
+          onTap: _showContactOptions,
+          child: Text(_displayName ?? _shorten(widget.contactAccountId)),
+        ),
       ),
       body: Column(
         children: [

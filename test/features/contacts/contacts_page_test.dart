@@ -217,7 +217,7 @@ void main() {
         store: InMemoryLocalStore(),
         localeController: LocaleController(),
         appLock: _testAppLock(),
-        torStatus: torService.status,
+        torService: torService,
       )));
       await tester.pump();
 

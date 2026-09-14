@@ -55,4 +55,12 @@ class PlatformTorService implements TorService {
 
     await _methodChannel.invokeMethod<void>('start');
   }
+
+  @override
+  Future<List<TorCircuit>> fetchCircuits() async {
+    final raw = await _methodChannel.invokeMethod<List<dynamic>>('getCircuits');
+    return (raw ?? [])
+        .map((entry) => TorCircuit.fromMap(entry as Map<dynamic, dynamic>))
+        .toList();
+  }
 }

@@ -1,29 +1,46 @@
 import 'package:flutter/material.dart';
 
+import '../../core/network/tor_service.dart';
 import '../../core/security/app_lock_controller.dart';
+import '../../core/security/auto_lock_settings.dart';
 import '../../core/settings/locale_controller.dart';
 import '../../l10n/app_localizations.dart';
 import '../help/help_page.dart';
 import 'pin_pages.dart';
+import 'tor_status_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
     super.key,
     required this.localeController,
     required this.appLock,
+    this.torService,
+    this.onLockNow,
   });
 
   final LocaleController localeController;
   final AppLockController appLock;
+
+  /// Null in contexts (like most tests) that don't care about Tor status —
+  /// when present, a "Tor connection" entry is offered.
+  final TorService? torService;
+
+  /// Closes and locks the app; null in contexts (like most tests) that
+  /// don't exercise that flow. The "Lock now" row only appears when this
+  /// is set (and a PIN is enabled — there'd be nothing to lock back into
+  /// otherwise).
+  final VoidCallback? onLockNow;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final _autoLockSettings = AutoLockSettings();
   bool _lockEnabled = false;
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
+  int _autoLockMinutes = 0;
   bool _loading = true;
 
   @override
@@ -36,11 +53,13 @@ class _SettingsPageState extends State<SettingsPage> {
     final lockEnabled = await widget.appLock.isEnabled;
     final biometricAvailable = await widget.appLock.isBiometricAvailable;
     final biometricEnabled = await widget.appLock.isBiometricEnabled;
+    final autoLockMinutes = await _autoLockSettings.minutes;
     if (!mounted) return;
     setState(() {
       _lockEnabled = lockEnabled;
       _biometricAvailable = biometricAvailable;
       _biometricEnabled = biometricEnabled;
+      _autoLockMinutes = autoLockMinutes;
       _loading = false;
     });
   }
@@ -80,6 +99,51 @@ class _SettingsPageState extends State<SettingsPage> {
     } else {
       await widget.appLock.disableBiometric();
       if (mounted) setState(() => _biometricEnabled = false);
+    }
+  }
+
+  Future<void> _pickAutoLock() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.autoLockPickerTitle),
+        children: [
+          for (final minutes in AutoLockSettings.options)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, minutes),
+              child: Text(minutes == 0
+                  ? l10n.autoLockNever
+                  : l10n.autoLockMinutes(minutes)),
+            ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    await _autoLockSettings.setMinutes(selected);
+    if (mounted) setState(() => _autoLockMinutes = selected);
+  }
+
+  Future<void> _confirmLockNow() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.lockNowConfirmTitle),
+        content: Text(l10n.lockNowConfirmMessage),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel)),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.lockNowAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      widget.onLockNow?.call();
     }
   }
 
@@ -136,6 +200,36 @@ class _SettingsPageState extends State<SettingsPage> {
                     value: _biometricEnabled,
                     onChanged: _toggleBiometric,
                   ),
+                if (_lockEnabled)
+                  ListTile(
+                    leading: const Icon(Icons.timer_outlined),
+                    title: Text(l10n.settingsAutoLock),
+                    subtitle: Text(l10n.settingsAutoLockSubtitle),
+                    trailing: Text(_autoLockMinutes == 0
+                        ? l10n.autoLockNever
+                        : l10n.autoLockMinutes(_autoLockMinutes)),
+                    onTap: _pickAutoLock,
+                  ),
+                if (_lockEnabled && widget.onLockNow != null)
+                  ListTile(
+                    leading: const Icon(Icons.lock_outline),
+                    title: Text(l10n.settingsLockNow),
+                    subtitle: Text(l10n.settingsLockNowSubtitle),
+                    onTap: _confirmLockNow,
+                  ),
+                if (widget.torService != null) ...[
+                  const Divider(),
+                  _SectionHeader(l10n.settingsTorStatus),
+                  ListTile(
+                    leading: const Icon(Icons.security),
+                    title: Text(l10n.settingsTorStatus),
+                    subtitle: Text(l10n.settingsTorStatusSubtitle),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) =>
+                          TorStatusPage(torService: widget.torService!),
+                    )),
+                  ),
+                ],
                 const Divider(),
                 _SectionHeader(l10n.settingsHelp),
                 ListTile(

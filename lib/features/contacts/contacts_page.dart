@@ -19,7 +19,8 @@ class ContactsPage extends StatefulWidget {
     required this.store,
     required this.localeController,
     required this.appLock,
-    this.torStatus,
+    this.torService,
+    this.onLockNow,
   });
 
   final SessionManager sessionManager;
@@ -28,8 +29,13 @@ class ContactsPage extends StatefulWidget {
   final AppLockController appLock;
 
   /// Null in contexts (like most tests) that don't care about Tor status —
-  /// when present, a small indicator is shown in the app bar.
-  final ValueListenable<TorStatus>? torStatus;
+  /// when present, a small indicator is shown in the app bar, and a Tor
+  /// status entry is offered in Settings.
+  final TorService? torService;
+
+  /// Closes and locks the app. Forwarded down to Settings; null in
+  /// contexts (like most tests) that don't exercise that flow.
+  final VoidCallback? onLockNow;
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
@@ -239,7 +245,8 @@ class _ContactsPageState extends State<ContactsPage> {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
-          if (widget.torStatus != null) _TorStatusIndicator(widget.torStatus!),
+          if (widget.torService != null)
+            _TorStatusIndicator(widget.torService!.status),
           IconButton(
             icon: const Icon(Icons.badge_outlined),
             tooltip: l10n.myAccountId,
@@ -252,6 +259,8 @@ class _ContactsPageState extends State<ContactsPage> {
               builder: (context) => SettingsPage(
                 localeController: widget.localeController,
                 appLock: widget.appLock,
+                torService: widget.torService,
+                onLockNow: widget.onLockNow,
               ),
             )),
           ),

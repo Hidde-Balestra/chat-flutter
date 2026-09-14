@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app_config.dart';
 import 'core/api/http_chat_backend.dart';
@@ -10,6 +10,7 @@ import 'core/network/platform_tor_service.dart';
 import 'core/network/tor_http_client.dart';
 import 'core/network/tor_service.dart';
 import 'core/security/app_lock_controller.dart';
+import 'core/security/auto_lock_settings.dart';
 import 'core/settings/locale_controller.dart';
 import 'core/storage/app_database.dart';
 import 'core/storage/secure_identity_store.dart';
@@ -76,16 +77,74 @@ class StartupPage extends StatefulWidget {
   State<StartupPage> createState() => _StartupPageState();
 }
 
-class _StartupPageState extends State<StartupPage> {
+class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
   final _appLock = AppLockController();
+  final _autoLockSettings = AutoLockSettings();
   _Stage _stage = _Stage.loading;
   Object? _error;
   _Session? _session;
+  DateTime? _pausedAt;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _checkLock();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _pausedAt = DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
+      _maybeAutoLock();
+    }
+  }
+
+  Future<void> _maybeAutoLock() async {
+    final pausedAt = _pausedAt;
+    _pausedAt = null;
+    if (pausedAt == null || _stage != _Stage.ready) return;
+    if (!await _appLock.isEnabled) return;
+    final minutes = await _autoLockSettings.minutes;
+    if (minutes <= 0) return;
+    if (DateTime.now().difference(pausedAt) >= Duration(minutes: minutes)) {
+      // Unlike the manual "lock now" button, this doesn't also close the
+      // app: the user just brought it back to the foreground themselves,
+      // so re-closing it on top of that would be a confusing loop. Dropping
+      // the session and requiring the PIN again has the same practical
+      // effect — nothing decrypted stays reachable without it.
+      _forceRelock();
+    }
+  }
+
+  void _forceRelock() {
+    if (!mounted) return;
+    setState(() {
+      _session = null;
+      _stage = _Stage.needsPin;
+    });
+  }
+
+  /// The Settings "lock now" button: drops every reference to decrypted
+  /// in-memory state (session, messages, contacts) so it becomes eligible
+  /// for garbage collection, then actually closes the app — matching what
+  /// was asked for literally, and the surest way to make sure nothing
+  /// decrypted lingers in memory. Next launch requires the PIN again,
+  /// exactly like any other cold start with app-lock enabled.
+  void _lockNow() {
+    setState(() {
+      _session = null;
+      _stage = _Stage.needsPin;
+    });
+    SystemNavigator.pop();
   }
 
   Future<void> _checkLock() async {
@@ -135,7 +194,7 @@ class _StartupPageState extends State<StartupPage> {
         _session = _Session(
           sessionManager: sessionManager,
           store: store,
-          torStatus: torService.status,
+          torService: torService,
         );
         _stage = _Stage.ready;
       });
@@ -183,7 +242,8 @@ class _StartupPageState extends State<StartupPage> {
           store: session.store,
           localeController: widget.localeController,
           appLock: _appLock,
-          torStatus: session.torStatus,
+          torService: session.torService,
+          onLockNow: _lockNow,
         );
     }
   }
@@ -193,12 +253,12 @@ class _Session {
   _Session({
     required this.sessionManager,
     required this.store,
-    required this.torStatus,
+    required this.torService,
   });
 
   final SessionManager sessionManager;
   final SqliteLocalStore store;
-  final ValueListenable<TorStatus> torStatus;
+  final TorService torService;
 }
 
 class _StartupError extends StatelessWidget {

@@ -583,6 +583,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This app sends all its traffic through Tor, a worldwide network of volunteer-run servers that hides your IP address by routing your connection through a few relays. Because of that, the server can never see where or which device you\'re connecting from. This happens automatically every time you open the app — you don\'t need to do anything, just wait for the icon at the top to change from a loading circle to a shield.'**
   String get helpTorBody;
+
+  /// No description provided for @settingsTorStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Tor connection'**
+  String get settingsTorStatus;
+
+  /// No description provided for @settingsTorStatusSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See whether you\'re connected, and which relays you\'re using'**
+  String get settingsTorStatusSubtitle;
+
+  /// No description provided for @torStatusPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tor connection'**
+  String get torStatusPageTitle;
+
+  /// No description provided for @torCircuitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active circuit'**
+  String get torCircuitsTitle;
+
+  /// No description provided for @torCircuitsExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'These are the relays your traffic is currently passing through, from you to the server.'**
+  String get torCircuitsExplanation;
+
+  /// No description provided for @torCircuitsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get torCircuitsRefresh;
+
+  /// No description provided for @torCircuitsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active circuit found yet — try again in a few seconds.'**
+  String get torCircuitsEmpty;
+
+  /// No description provided for @torCircuitsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t fetch circuit info: {error}'**
+  String torCircuitsError(String error);
+
+  /// No description provided for @torHopGuard.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry'**
+  String get torHopGuard;
+
+  /// No description provided for @torHopMiddle.
+  ///
+  /// In en, this message translates to:
+  /// **'Middle'**
+  String get torHopMiddle;
+
+  /// No description provided for @torHopExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get torHopExit;
+
+  /// No description provided for @torHopUnknownAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'address unknown'**
+  String get torHopUnknownAddress;
+
+  /// No description provided for @settingsAutoLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-lock'**
+  String get settingsAutoLock;
+
+  /// No description provided for @settingsAutoLockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock the app on its own if you haven\'t used it for a while'**
+  String get settingsAutoLockSubtitle;
+
+  /// No description provided for @autoLockPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-lock after'**
+  String get autoLockPickerTitle;
+
+  /// No description provided for @autoLockNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get autoLockNever;
+
+  /// No description provided for @autoLockMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{1 minute} other{{minutes} minutes}}'**
+  String autoLockMinutes(num minutes);
+
+  /// No description provided for @settingsLockNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock now'**
+  String get settingsLockNow;
+
+  /// No description provided for @settingsLockNowSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Closes the app right away and asks for your PIN again next time'**
+  String get settingsLockNowSubtitle;
+
+  /// No description provided for @lockNowConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock now?'**
+  String get lockNowConfirmTitle;
+
+  /// No description provided for @lockNowConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The app will close. Next time you\'ll need to enter your PIN (or fingerprint) again.'**
+  String get lockNowConfirmMessage;
+
+  /// No description provided for @lockNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get lockNowAction;
+
+  /// No description provided for @viewAccountId.
+  ///
+  /// In en, this message translates to:
+  /// **'View Account ID'**
+  String get viewAccountId;
+
+  /// No description provided for @contactAccountIdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This contact\'s Account ID'**
+  String get contactAccountIdTitle;
+
+  /// No description provided for @helpContactOptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocking a contact or deleting the conversation'**
+  String get helpContactOptionsTitle;
+
+  /// No description provided for @helpContactOptionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In an open conversation, tap your contact\'s name at the top. From there you can give them a name, block them, or delete the whole conversation.'**
+  String get helpContactOptionsBody;
+
+  /// No description provided for @helpAutoLockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Locking the app remotely or automatically'**
+  String get helpAutoLockTitle;
+
+  /// No description provided for @helpAutoLockBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Under Settings → Security you\'ll find \"Lock now\": it closes the app right away and asks for your PIN again next time. You can also set it to do that on its own after you haven\'t used the app for a while.'**
+  String get helpAutoLockBody;
 }
 
 class _AppLocalizationsDelegate

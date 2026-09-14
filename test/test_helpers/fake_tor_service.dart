@@ -4,6 +4,8 @@ import 'package:privacychat/core/network/tor_service.dart';
 /// A [TorService] a test can drive directly, without any platform channel.
 class FakeTorService implements TorService {
   final _status = ValueNotifier<TorStatus>(TorStatus.initial);
+  List<TorCircuit> circuits = [];
+  Object? circuitsError;
 
   @override
   ValueListenable<TorStatus> get status => _status;
@@ -18,6 +20,13 @@ class FakeTorService implements TorService {
 
   @override
   Future<void> start() async {}
+
+  @override
+  Future<List<TorCircuit>> fetchCircuits() async {
+    final error = circuitsError;
+    if (error != null) throw error;
+    return circuits;
+  }
 
   void setProgress(int percent) {
     _status.value = TorStatus(TorConnectionState.connecting, percent: percent);

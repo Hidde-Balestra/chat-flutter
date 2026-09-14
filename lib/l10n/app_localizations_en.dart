@@ -277,4 +277,107 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpTorBody =>
       'This app sends all its traffic through Tor, a worldwide network of volunteer-run servers that hides your IP address by routing your connection through a few relays. Because of that, the server can never see where or which device you\'re connecting from. This happens automatically every time you open the app — you don\'t need to do anything, just wait for the icon at the top to change from a loading circle to a shield.';
+
+  @override
+  String get settingsTorStatus => 'Tor connection';
+
+  @override
+  String get settingsTorStatusSubtitle =>
+      'See whether you\'re connected, and which relays you\'re using';
+
+  @override
+  String get torStatusPageTitle => 'Tor connection';
+
+  @override
+  String get torCircuitsTitle => 'Active circuit';
+
+  @override
+  String get torCircuitsExplanation =>
+      'These are the relays your traffic is currently passing through, from you to the server.';
+
+  @override
+  String get torCircuitsRefresh => 'Refresh';
+
+  @override
+  String get torCircuitsEmpty =>
+      'No active circuit found yet — try again in a few seconds.';
+
+  @override
+  String torCircuitsError(String error) {
+    return 'Couldn\'t fetch circuit info: $error';
+  }
+
+  @override
+  String get torHopGuard => 'Entry';
+
+  @override
+  String get torHopMiddle => 'Middle';
+
+  @override
+  String get torHopExit => 'Exit';
+
+  @override
+  String get torHopUnknownAddress => 'address unknown';
+
+  @override
+  String get settingsAutoLock => 'Auto-lock';
+
+  @override
+  String get settingsAutoLockSubtitle =>
+      'Lock the app on its own if you haven\'t used it for a while';
+
+  @override
+  String get autoLockPickerTitle => 'Auto-lock after';
+
+  @override
+  String get autoLockNever => 'Never';
+
+  @override
+  String autoLockMinutes(num minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsLockNow => 'Lock now';
+
+  @override
+  String get settingsLockNowSubtitle =>
+      'Closes the app right away and asks for your PIN again next time';
+
+  @override
+  String get lockNowConfirmTitle => 'Lock now?';
+
+  @override
+  String get lockNowConfirmMessage =>
+      'The app will close. Next time you\'ll need to enter your PIN (or fingerprint) again.';
+
+  @override
+  String get lockNowAction => 'Lock';
+
+  @override
+  String get viewAccountId => 'View Account ID';
+
+  @override
+  String get contactAccountIdTitle => 'This contact\'s Account ID';
+
+  @override
+  String get helpContactOptionsTitle =>
+      'Blocking a contact or deleting the conversation';
+
+  @override
+  String get helpContactOptionsBody =>
+      'In an open conversation, tap your contact\'s name at the top. From there you can give them a name, block them, or delete the whole conversation.';
+
+  @override
+  String get helpAutoLockTitle => 'Locking the app remotely or automatically';
+
+  @override
+  String get helpAutoLockBody =>
+      'Under Settings → Security you\'ll find \"Lock now\": it closes the app right away and asks for your PIN again next time. You can also set it to do that on its own after you haven\'t used the app for a while.';
 }

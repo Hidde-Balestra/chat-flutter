@@ -221,5 +221,55 @@ void main() {
       expect(find.textContaining('geblokkeerd'), findsWidgets);
       expect(find.byType(TextField), findsNothing);
     });
+
+    testWidgets(
+        'tapping the contact name opens options to rename, block or delete',
+        (tester) async {
+      final server = FakeServer();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      final store = InMemoryLocalStore();
+      final contactId = '05${'66' * 32}';
+      await store.upsertContact(contactId, displayName: 'Vriend');
+
+      await tester.pumpWidget(localizedTestApp(Builder(builder: (context) {
+        return Scaffold(
+          body: Center(
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => ChatPage(
+                    sessionManager: me,
+                    store: store,
+                    contactAccountId: contactId),
+              )),
+              child: const Text('open'),
+            ),
+          ),
+        );
+      })));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Vriend'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Account ID bekijken'), findsOneWidget);
+      expect(find.text('Naam aanpassen'), findsOneWidget);
+      expect(find.text('Blokkeren'), findsOneWidget);
+      expect(find.text('Verwijderen'), findsOneWidget);
+
+      await tester.tap(find.text('Verwijderen'));
+      await tester.pumpAndSettle();
+      // Confirmation dialog.
+      await tester.tap(find.text('Verwijderen').last);
+      await tester.pumpAndSettle();
+
+      expect(await store.getContact(contactId), isNull);
+      expect(find.text('open'), findsOneWidget); // popped back
+    });
   });
 }

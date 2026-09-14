@@ -119,5 +119,49 @@
   "torFailed": "Tor-verbinding mislukt — opnieuw proberen…",
 
   "helpTorTitle": "Waarom moet ik eerst \"verbinden via Tor\" wachten?",
-  "helpTorBody": "Deze app stuurt al je verkeer via Tor, een wereldwijd netwerk van vrijwillige servers dat je IP-adres verbergt door je verbinding via een paar tussenstations om te leiden. Daardoor kan de server nooit zien vanaf welke plek of welk toestel jij verbindt. Dit gebeurt automatisch, elke keer dat je de app opent — je hoeft er niets voor te doen, alleen even wachten tot het pictogram bovenin verandert van een laadcirkel naar een schildje."
+  "helpTorBody": "Deze app stuurt al je verkeer via Tor, een wereldwijd netwerk van vrijwillige servers dat je IP-adres verbergt door je verbinding via een paar tussenstations om te leiden. Daardoor kan de server nooit zien vanaf welke plek of welk toestel jij verbindt. Dit gebeurt automatisch, elke keer dat je de app opent — je hoeft er niets voor te doen, alleen even wachten tot het pictogram bovenin verandert van een laadcirkel naar een schildje.",
+
+  "settingsTorStatus": "Tor-verbinding",
+  "settingsTorStatusSubtitle": "Bekijk of je verbonden bent en via welke tussenstations",
+  "torStatusPageTitle": "Tor-verbinding",
+  "torCircuitsTitle": "Actief circuit",
+  "torCircuitsExplanation": "Dit zijn de tussenstations waar je verkeer nu doorheen gaat, van jou naar de server.",
+  "torCircuitsRefresh": "Vernieuwen",
+  "torCircuitsEmpty": "Nog geen actief circuit gevonden — probeer het over een paar seconden nog eens.",
+  "torCircuitsError": "Kon de circuit-info niet ophalen: {error}",
+  "@torCircuitsError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "torHopGuard": "Toegang",
+  "torHopMiddle": "Midden",
+  "torHopExit": "Uitgang",
+  "torHopUnknownAddress": "adres onbekend",
+
+  "settingsAutoLock": "Automatisch vergrendelen",
+  "settingsAutoLockSubtitle": "Vergrendel de app vanzelf als je 'm een tijdje niet hebt gebruikt",
+  "autoLockPickerTitle": "Automatisch vergrendelen na",
+  "autoLockNever": "Nooit",
+  "autoLockMinutes": "{minutes, plural, =1{1 minuut} other{{minutes} minuten}}",
+  "@autoLockMinutes": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+
+  "settingsLockNow": "Nu vergrendelen",
+  "settingsLockNowSubtitle": "Sluit de app direct af en vraagt de volgende keer weer om je pincode",
+  "lockNowConfirmTitle": "Nu vergrendelen?",
+  "lockNowConfirmMessage": "De app wordt afgesloten. De volgende keer moet je je pincode (of vingerafdruk) weer invoeren.",
+  "lockNowAction": "Vergrendelen",
+
+  "viewAccountId": "Account ID bekijken",
+  "contactAccountIdTitle": "Account ID van dit contact",
+
+  "helpContactOptionsTitle": "Een contact blokkeren of het gesprek verwijderen",
+  "helpContactOptionsBody": "Tik in een open gesprek boven op de naam van je contact. Daar kun je diegene een naam geven, blokkeren of het hele gesprek verwijderen.",
+
+  "helpAutoLockTitle": "De app op afstand of automatisch vergrendelen",
+  "helpAutoLockBody": "Bij Instellingen → Beveiliging vind je \"Nu vergrendelen\": sluit de app meteen af en vraagt de volgende keer weer om je pincode. Je kunt daar ook instellen dat dit vanzelf gebeurt nadat je de app een tijdje niet gebruikt hebt."
 }

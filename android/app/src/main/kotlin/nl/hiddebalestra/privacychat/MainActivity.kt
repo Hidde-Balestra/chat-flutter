@@ -44,6 +44,18 @@ class MainActivity : FlutterFragmentActivity() {
                         torController.stop()
                         result.success(null)
                     }
+                    "getCircuits" -> {
+                        Thread {
+                            try {
+                                val circuits = torController.fetchCircuits()
+                                runOnUiThread { result.success(circuits) }
+                            } catch (e: Exception) {
+                                runOnUiThread {
+                                    result.error("tor_control_error", e.message, null)
+                                }
+                            }
+                        }.apply { isDaemon = true }.start()
+                    }
                     else -> result.notImplemented()
                 }
             }

@@ -279,4 +279,108 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get helpTorBody =>
       'Deze app stuurt al je verkeer via Tor, een wereldwijd netwerk van vrijwillige servers dat je IP-adres verbergt door je verbinding via een paar tussenstations om te leiden. Daardoor kan de server nooit zien vanaf welke plek of welk toestel jij verbindt. Dit gebeurt automatisch, elke keer dat je de app opent — je hoeft er niets voor te doen, alleen even wachten tot het pictogram bovenin verandert van een laadcirkel naar een schildje.';
+
+  @override
+  String get settingsTorStatus => 'Tor-verbinding';
+
+  @override
+  String get settingsTorStatusSubtitle =>
+      'Bekijk of je verbonden bent en via welke tussenstations';
+
+  @override
+  String get torStatusPageTitle => 'Tor-verbinding';
+
+  @override
+  String get torCircuitsTitle => 'Actief circuit';
+
+  @override
+  String get torCircuitsExplanation =>
+      'Dit zijn de tussenstations waar je verkeer nu doorheen gaat, van jou naar de server.';
+
+  @override
+  String get torCircuitsRefresh => 'Vernieuwen';
+
+  @override
+  String get torCircuitsEmpty =>
+      'Nog geen actief circuit gevonden — probeer het over een paar seconden nog eens.';
+
+  @override
+  String torCircuitsError(String error) {
+    return 'Kon de circuit-info niet ophalen: $error';
+  }
+
+  @override
+  String get torHopGuard => 'Toegang';
+
+  @override
+  String get torHopMiddle => 'Midden';
+
+  @override
+  String get torHopExit => 'Uitgang';
+
+  @override
+  String get torHopUnknownAddress => 'adres onbekend';
+
+  @override
+  String get settingsAutoLock => 'Automatisch vergrendelen';
+
+  @override
+  String get settingsAutoLockSubtitle =>
+      'Vergrendel de app vanzelf als je \'m een tijdje niet hebt gebruikt';
+
+  @override
+  String get autoLockPickerTitle => 'Automatisch vergrendelen na';
+
+  @override
+  String get autoLockNever => 'Nooit';
+
+  @override
+  String autoLockMinutes(num minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minuten',
+      one: '1 minuut',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsLockNow => 'Nu vergrendelen';
+
+  @override
+  String get settingsLockNowSubtitle =>
+      'Sluit de app direct af en vraagt de volgende keer weer om je pincode';
+
+  @override
+  String get lockNowConfirmTitle => 'Nu vergrendelen?';
+
+  @override
+  String get lockNowConfirmMessage =>
+      'De app wordt afgesloten. De volgende keer moet je je pincode (of vingerafdruk) weer invoeren.';
+
+  @override
+  String get lockNowAction => 'Vergrendelen';
+
+  @override
+  String get viewAccountId => 'Account ID bekijken';
+
+  @override
+  String get contactAccountIdTitle => 'Account ID van dit contact';
+
+  @override
+  String get helpContactOptionsTitle =>
+      'Een contact blokkeren of het gesprek verwijderen';
+
+  @override
+  String get helpContactOptionsBody =>
+      'Tik in een open gesprek boven op de naam van je contact. Daar kun je diegene een naam geven, blokkeren of het hele gesprek verwijderen.';
+
+  @override
+  String get helpAutoLockTitle =>
+      'De app op afstand of automatisch vergrendelen';
+
+  @override
+  String get helpAutoLockBody =>
+      'Bij Instellingen → Beveiliging vind je \"Nu vergrendelen\": sluit de app meteen af en vraagt de volgende keer weer om je pincode. Je kunt daar ook instellen dat dit vanzelf gebeurt nadat je de app een tijdje niet gebruikt hebt.';
 }
