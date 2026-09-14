@@ -53,6 +53,15 @@ class TorController(private val context: Context) {
         Thread {
             try {
                 dataDir.mkdirs()
+                // A prior run that didn't shut down cleanly (the app process
+                // was killed rather than exiting normally, common while
+                // side-loading test builds repeatedly) can leave tor's own
+                // lock file behind. Tor refuses to start with a "Couldn't
+                // get global state lock" if a *live* process still holds
+                // it, but happily replaces a stale one — deleting it first
+                // means a start attempt only ever fails on a lock actually
+                // held by something still running, not a leftover file.
+                File(dataDir, "lock").delete()
                 val torrc = File(dataDir, "torrc").apply {
                     writeText(
                         """
@@ -79,9 +88,17 @@ class TorController(private val context: Context) {
                     .start()
                 process = proc
 
+                // Every line is kept (not just "Bootstrapped NN%" ones) so
+                // that if tor exits early, the *actual* reason — a fatal
+                // config/permission/bind error, logged before it ever gets
+                // to bootstrapping — can be reported instead of just an
+                // exit code, which on its own was useless for diagnosing
+                // anything.
+                val outputLines = mutableListOf<String>()
                 var connected = false
                 BufferedReader(InputStreamReader(proc.inputStream)).useLines { lines ->
                     for (line in lines) {
+                        outputLines.add(line)
                         val match = BOOTSTRAP_REGEX.find(line) ?: continue
                         val percent = match.groupValues[1].toIntOrNull() ?: continue
                         onProgress(percent)
@@ -97,7 +114,9 @@ class TorController(private val context: Context) {
                 // Dart side can show something other than a stuck spinner.
                 running.set(false)
                 if (!connected) {
-                    onError("tor exited before connecting (code ${proc.waitFor()})")
+                    val exitCode = proc.waitFor()
+                    val tail = outputLines.takeLast(6).joinToString(" | ")
+                    onError("tor exited before connecting (code $exitCode): $tail")
                 }
             } catch (e: Exception) {
                 running.set(false)
