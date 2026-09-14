@@ -12,12 +12,14 @@ void main() {
     // looks like a DNS error ("Failed host lookup") instead of a permission
     // error.
     final manifest = File('android/app/src/main/AndroidManifest.xml');
-    expect(manifest.existsSync(), isTrue, reason: 'expected ${manifest.path} to exist');
+    expect(manifest.existsSync(), isTrue,
+        reason: 'expected ${manifest.path} to exist');
 
     expect(
       manifest.readAsStringSync(),
       contains('android.permission.INTERNET'),
-      reason: 'Without this permission declared in the *main* manifest specifically, '
+      reason:
+          'Without this permission declared in the *main* manifest specifically, '
           'release APK builds have no network access even though debug builds work fine.',
     );
   });
