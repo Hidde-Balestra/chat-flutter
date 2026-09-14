@@ -1,0 +1,31 @@
+name: privacychat
+description: >
+  Vriendelijke, privacy-first chat-app (Session-geïnspireerd) met end-to-end
+  versleutelde berichten en metadata, zonder telefoonnummer of andere
+  identificeerbare data.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cryptography: ^2.7.0
+  flutter_secure_storage: ^9.2.2
+  collection: ^1.18.0
+  meta: ^1.15.0
+  http: ^1.2.2
+  sqflite_sqlcipher: ^3.1.0
+  path: ^1.9.0
+  path_provider: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
