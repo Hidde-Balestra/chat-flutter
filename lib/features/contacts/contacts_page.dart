@@ -37,7 +37,7 @@ class _ContactsPageState extends State<ContactsPage> {
   void initState() {
     super.initState();
     _init();
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _poll());
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _poll());
   }
 
   @override

@@ -35,7 +35,11 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _refresh();
     _loadContact();
-    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _poll());
+    // No WebSocket/push infra on the current (plain PHP shared) hosting, so
+    // this is as close to real-time as polling gets without hammering the
+    // server — fast enough to feel snappy while a conversation is open.
+    _pollTimer =
+        Timer.periodic(const Duration(milliseconds: 1500), (_) => _poll());
   }
 
   Future<void> _loadContact() async {
