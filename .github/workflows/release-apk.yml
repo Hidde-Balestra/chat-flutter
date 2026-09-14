@@ -3,6 +3,8 @@ name: Release APK
 on:
   release:
     types: [created]
+  push:
+    tags: ['v*']
   workflow_dispatch: {}
 
 permissions:
@@ -36,8 +38,10 @@ jobs:
           name: privacychat-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Attach APK to the GitHub release
-        if: github.event_name == 'release'
+      - name: Create/update the GitHub release with the APK attached
+        if: github.event_name == 'release' || github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-release.apk
+          prerelease: true
+          generate_release_notes: true

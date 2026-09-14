@@ -10,24 +10,26 @@ volledige plan: `/home/admin/.claude/plans/zippy-soaring-pearl.md`.
 Fase 1–3 van het plan zijn klaar: cryptografische kern (X3DH + Double
 Ratchet), lokale versleutelde opslag (SQLCipher), een REST/polling-client
 voor de PHP-backend, en een eenvoudige contacten- + chat-UI. Alles is
-geverifieerd met `flutter analyze` (geen issues) en `flutter test` (22/22
+geverifieerd met `flutter analyze` (geen issues) en `flutter test` (40/40
 groen). Groepschats (fase 4) en verdere afwerking (fase 5) volgen nog — zie
 het volledige plan voor de architectuur.
 
-Je moet zelf nog een PHP-backend draaien (zie de `backend/`-map in het
-hoofdproject) en de URL ervan instellen — zie **Backend-URL instellen**
-hieronder.
+De backend draait op `https://chat.awake-music.co/api/` (standaard
+ingesteld in `lib/app_config.dart`).
 
 ## Setup
 
 ```bash
 flutter pub get
 flutter test        # crypto-core + sessiebeheer unit-tests
-flutter run --dart-define=BACKEND_BASE_URL=https://jouw-backend.tld/
+flutter run
 ```
 
-Zonder `--dart-define` gebruikt de app `http://localhost:8080/` (zie
-`lib/app_config.dart`).
+Wijs de app naar een andere backend met `--dart-define`:
+
+```bash
+flutter run --dart-define=BACKEND_BASE_URL=https://jouw-eigen-backend.tld/
+```
 
 ## Structuur
 
