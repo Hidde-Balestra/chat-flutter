@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cryptography/cryptography.dart';
+import 'package:flutter/foundation.dart';
 
 import '../api/chat_backend.dart';
 import '../crypto/double_ratchet.dart';
@@ -161,10 +162,16 @@ class SessionManager {
           body: utf8.decode(plaintext),
         );
         updatedContacts.add(envelope.senderAccountId);
-      } catch (_) {
+      } catch (e, stackTrace) {
         // Malformed, out-of-window or already-processed (duplicate
         // delivery) — this can never succeed on retry, so ack it anyway
         // rather than let a single bad envelope wedge the whole mailbox.
+        // Still logged (visible via `flutter logs` / adb logcat) so a real
+        // bug doesn't silently look like "message never arrived".
+        debugPrint(
+          'privacychat: dropping undecryptable envelope ${envelope.envelopeId} '
+          'from ${envelope.senderAccountId} (${envelope.envelopeType}): $e\n$stackTrace',
+        );
       }
       toAck.add(envelope.envelopeId);
     }

@@ -42,10 +42,15 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _poll() async {
-    final updated = await widget.sessionManager.pollAndDecrypt();
-    if (updated.contains(widget.contactAccountId)) {
-      await _refresh();
-    }
+    // Always refresh from the local store after polling — don't rely on
+    // *this* poll call's own return value to decide whether to refresh.
+    // ContactsPage keeps polling in the background too (it isn't disposed
+    // while this page is pushed on top of it), so another poll can win the
+    // race and already save the message before this one even runs; relying
+    // on our own "did I just receive something" result then means we never
+    // refresh even though the store already has the new message.
+    await widget.sessionManager.pollAndDecrypt();
+    await _refresh();
   }
 
   Future<void> _refresh() async {

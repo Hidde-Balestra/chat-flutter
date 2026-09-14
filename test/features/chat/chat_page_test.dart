@@ -49,6 +49,53 @@ void main() {
       expect(await meStore.messagesWith(contactId), hasLength(2));
     });
 
+    testWidgets(
+        'refreshes on the next poll tick even if another poller already '
+        'stored the message (e.g. ContactsPage polling in the background)',
+        (tester) async {
+      final server = FakeServer();
+      final meIdentity = await IdentityKeyPair.generateRandom();
+      final contactIdentity = await IdentityKeyPair.generateRandom();
+      final meStore = InMemoryLocalStore();
+
+      final me = SessionManager(
+          identity: meIdentity,
+          backend: FakeChatBackend(server),
+          store: meStore);
+      final contact = SessionManager(
+        identity: contactIdentity,
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      await contact.bootstrap();
+      final contactId = await contact.accountId;
+
+      await tester.pumpWidget(MaterialApp(
+        home: ChatPage(
+            sessionManager: me, store: meStore, contactAccountId: contactId),
+      ));
+      await tester.pump();
+      expect(find.text('binnengekomen via een andere poller'), findsNothing);
+
+      // Simulate another poller (ContactsPage, still alive underneath this
+      // page in the nav stack) having already fetched-and-acked the
+      // envelope: the message lands straight in the store, without
+      // ChatPage's own poll call ever seeing it in its own
+      // pollAndDecrypt() result.
+      await meStore.saveMessage(
+        contactId: contactId,
+        direction: 'in',
+        body: 'binnengekomen via een andere poller',
+      );
+
+      // Let ChatPage's own 3-second poll timer fire once.
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump();
+
+      expect(find.text('binnengekomen via een andere poller'), findsOneWidget);
+    });
+
     testWidgets('shows an empty state when there are no messages yet',
         (tester) async {
       final server = FakeServer();
