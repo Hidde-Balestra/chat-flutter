@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,6 +14,7 @@ import 'core/security/app_lock_controller.dart';
 import 'core/security/auto_lock_settings.dart';
 import 'core/settings/locale_controller.dart';
 import 'core/storage/app_database.dart';
+import 'core/storage/local_store.dart';
 import 'core/storage/secure_identity_store.dart';
 import 'core/storage/sqlite_local_store.dart';
 import 'features/contacts/contacts_page.dart';
@@ -69,20 +71,37 @@ enum _Stage { loading, needsPin, ready, error }
 /// If app-lock is enabled (see [AppLockController]), a PIN screen is shown
 /// first — the on-device database literally cannot be opened without it.
 class StartupPage extends StatefulWidget {
-  const StartupPage({super.key, required this.localeController});
+  const StartupPage({
+    super.key,
+    required this.localeController,
+    this.appLock,
+    this.autoLockSettings,
+    this.sessionBuilder,
+  });
 
   final LocaleController localeController;
+
+  /// Overridable so tests can supply a fake-secure-storage-backed instance
+  /// instead of a fresh production one; defaults to a real
+  /// [AppLockController] when not given.
+  final AppLockController? appLock;
+  final AutoLockSettings? autoLockSettings;
+
+  /// Overridable so tests can skip real secure storage / SQLite / Tor
+  /// entirely and hand back an already-built [AppSession] synchronously;
+  /// defaults to the real production flow ([_buildProductionSession]).
+  final Future<AppSession> Function(String? passphrase)? sessionBuilder;
 
   @override
   State<StartupPage> createState() => _StartupPageState();
 }
 
 class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
-  final _appLock = AppLockController();
-  final _autoLockSettings = AutoLockSettings();
+  late final _appLock = widget.appLock ?? AppLockController();
+  late final _autoLockSettings = widget.autoLockSettings ?? AutoLockSettings();
   _Stage _stage = _Stage.loading;
   Object? _error;
-  _Session? _session;
+  AppSession? _session;
   DateTime? _pausedAt;
 
   @override
@@ -102,7 +121,7 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
-      _pausedAt = DateTime.now();
+      _pausedAt = clock.now();
     } else if (state == AppLifecycleState.resumed) {
       _maybeAutoLock();
     }
@@ -114,8 +133,8 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
     if (pausedAt == null || _stage != _Stage.ready) return;
     if (!await _appLock.isEnabled) return;
     final minutes = await _autoLockSettings.minutes;
-    if (minutes <= 0) return;
-    if (DateTime.now().difference(pausedAt) >= Duration(minutes: minutes)) {
+    if (AutoLockSettings.shouldLock(
+        minutes: minutes, pausedAt: pausedAt, now: clock.now())) {
       // Unlike the manual "lock now" button, this doesn't also close the
       // app: the user just brought it back to the foreground themselves,
       // so re-closing it on top of that would be a confusing loop. Dropping
@@ -178,35 +197,11 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
 
   Future<void> _prepare({required String? passphrase}) async {
     try {
-      final identity = await SecureIdentityStore().loadOrCreate();
-      final database = await AppDatabase.open(passphrase: passphrase);
-      final store = SqliteLocalStore(database);
-
-      // The app has no non-Tor networking path: every request the backend
-      // ever sees arrives over Tor, so it never learns the device's real
-      // IP address. Requests made before Tor finishes connecting simply
-      // wait — same offline-first spirit as the rest of this flow.
-      final torService = PlatformTorService();
-      unawaited(torService.start());
-      final backend = HttpChatBackend(
-        baseUrl: Uri.parse(backendBaseUrl),
-        client: TorHttpClient(torService),
-      );
-      final sessionManager =
-          SessionManager(identity: identity, backend: backend, store: store);
-
-      // Best-effort, non-blocking: if there's no connection right now, the
-      // UI below still opens normally with whatever is already stored
-      // locally. ContactsPage/ChatPage retry this on every poll tick.
-      unawaited(sessionManager.ensureBootstrapped());
-
+      final session =
+          await (widget.sessionBuilder ?? _buildProductionSession)(passphrase);
       if (!mounted) return;
       setState(() {
-        _session = _Session(
-          sessionManager: sessionManager,
-          store: store,
-          torService: torService,
-        );
+        _session = session;
         _stage = _Stage.ready;
       });
     } catch (e) {
@@ -260,15 +255,50 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
   }
 }
 
-class _Session {
-  _Session({
+/// The real production flow: generate/load the on-device identity, open the
+/// encrypted local database, and start the (mandatory) Tor client. Separate
+/// from [_StartupPageState._prepare] so tests can substitute a fake
+/// (via [StartupPage.sessionBuilder]) without touching real secure storage,
+/// SQLite, or a platform channel to a Tor process.
+Future<AppSession> _buildProductionSession(String? passphrase) async {
+  final identity = await SecureIdentityStore().loadOrCreate();
+  final database = await AppDatabase.open(passphrase: passphrase);
+  final store = SqliteLocalStore(database);
+
+  // The app has no non-Tor networking path: every request the backend
+  // ever sees arrives over Tor, so it never learns the device's real
+  // IP address. Requests made before Tor finishes connecting simply
+  // wait — same offline-first spirit as the rest of this flow.
+  final torService = PlatformTorService();
+  unawaited(torService.start());
+  final backend = HttpChatBackend(
+    baseUrl: Uri.parse(backendBaseUrl),
+    client: TorHttpClient(torService),
+  );
+  final sessionManager =
+      SessionManager(identity: identity, backend: backend, store: store);
+
+  // Best-effort, non-blocking: if there's no connection right now, the
+  // UI below still opens normally with whatever is already stored
+  // locally. ContactsPage/ChatPage retry this on every poll tick.
+  unawaited(sessionManager.ensureBootstrapped());
+
+  return AppSession(
+    sessionManager: sessionManager,
+    store: store,
+    torService: torService,
+  );
+}
+
+class AppSession {
+  AppSession({
     required this.sessionManager,
     required this.store,
     required this.torService,
   });
 
   final SessionManager sessionManager;
-  final SqliteLocalStore store;
+  final LocalStore store;
   final TorService torService;
 }
 

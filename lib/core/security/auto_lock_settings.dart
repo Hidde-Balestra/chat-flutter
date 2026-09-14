@@ -17,4 +17,19 @@ class AutoLockSettings {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_key, minutes);
   }
+
+  /// True once at least [minutes] have elapsed between [pausedAt] (when the
+  /// app went to the background) and [now]. [minutes] <= 0 means "never
+  /// auto-lock" and is always false, regardless of how long has passed.
+  /// A pure function on purpose — kept separate from the app-lifecycle
+  /// plumbing that calls it so the boundary comparison itself (easy to get
+  /// off-by-one on) can be unit-tested directly.
+  static bool shouldLock({
+    required int minutes,
+    required DateTime pausedAt,
+    required DateTime now,
+  }) {
+    if (minutes <= 0) return false;
+    return now.difference(pausedAt) >= Duration(minutes: minutes);
+  }
 }
