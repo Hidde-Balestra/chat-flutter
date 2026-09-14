@@ -60,7 +60,13 @@ android {
     // that extracted folder in as an extra jniLibs source dir (further down)
     // is what actually gets libtor.so packaged into the APK per-ABI.
     sourceSets {
-        getByName("main").jniLibs.srcDir(layout.buildDirectory.dir("torBinaries"))
+        // The SourceSet API (unlike the newer Variant API) rejects a
+        // Provider<Directory> here — "You cannot add Provider instances to
+        // the Android SourceSet API" — so this must be resolved to a plain
+        // File eagerly, not passed as layout.buildDirectory.dir(...).
+        getByName("main").jniLibs.srcDir(
+            layout.buildDirectory.dir("torBinaries").get().asFile
+        )
     }
 }
 
