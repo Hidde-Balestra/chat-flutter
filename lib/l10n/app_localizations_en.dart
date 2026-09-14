@@ -127,4 +127,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get turnOffAction => 'Turn off';
+
+  @override
+  String get messageRequests => 'Message requests';
+
+  @override
+  String get contactsSectionTitle => 'Contacts';
+
+  @override
+  String get deleteContact => 'Delete';
+
+  @override
+  String get deleteContactConfirmTitle => 'Delete this contact?';
+
+  @override
+  String deleteContactConfirmMessage(String name) {
+    return 'This removes the conversation and all messages with $name. This can\'t be undone.';
+  }
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get messageRequestBanner =>
+      'Message request — accept to reply, or decline/block.';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get decline => 'Decline';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get blockContactConfirmTitle => 'Block this contact?';
+
+  @override
+  String blockContactConfirmMessage(String name) {
+    return '$name will no longer be able to message you. This clears the current conversation.';
+  }
+
+  @override
+  String get blockedBanner =>
+      'You\'ve blocked this contact. They can no longer message you.';
+
+  @override
+  String get unblock => 'Unblock';
 }

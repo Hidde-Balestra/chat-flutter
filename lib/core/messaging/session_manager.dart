@@ -179,14 +179,25 @@ class SessionManager {
 
     for (final envelope in envelopes) {
       try {
+        // Decrypting always happens, blocked or not — the Double Ratchet
+        // chain must keep advancing on every message or a later, wanted
+        // message from the same contact would fail to decrypt too.
         final plaintext = await _decryptEnvelope(envelope);
-        await _store.upsertContact(envelope.senderAccountId);
-        await _store.saveMessage(
-          contactId: envelope.senderAccountId,
-          direction: 'in',
-          body: utf8.decode(plaintext),
-        );
-        updatedContacts.add(envelope.senderAccountId);
+        final existing = await _store.getContact(envelope.senderAccountId);
+
+        if (existing?.status != ContactStatus.blocked) {
+          // New senders land as a pending message request, not silently
+          // added as a normal contact — upsertContact only applies this on
+          // first insert, so an already-accepted contact is left alone.
+          await _store.upsertContact(envelope.senderAccountId,
+              status: ContactStatus.pending);
+          await _store.saveMessage(
+            contactId: envelope.senderAccountId,
+            direction: 'in',
+            body: utf8.decode(plaintext),
+          );
+          updatedContacts.add(envelope.senderAccountId);
+        }
       } catch (e, stackTrace) {
         // Malformed, out-of-window or already-processed (duplicate
         // delivery) — this can never succeed on retry, so ack it anyway

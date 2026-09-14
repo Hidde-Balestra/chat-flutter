@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:privacychat/core/crypto/identity_key_pair.dart';
 import 'package:privacychat/core/messaging/session_manager.dart';
+import 'package:privacychat/core/storage/local_store.dart';
 import 'package:privacychat/features/chat/chat_page.dart';
 
 import '../../core/messaging/fakes.dart';
@@ -111,6 +112,114 @@ void main() {
       await tester.pump();
 
       expect(find.text('Nog geen berichten. Zeg iets!'), findsOneWidget);
+    });
+
+    testWidgets(
+        'a pending message request shows a banner and hides the input until accepted',
+        (tester) async {
+      final server = FakeServer();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      final store = InMemoryLocalStore();
+      final requesterId = '05${'22' * 32}';
+      await store.upsertContact(requesterId, status: ContactStatus.pending);
+      await store.saveMessage(
+          contactId: requesterId,
+          direction: 'in',
+          body: 'hoi, mag ik chatten?');
+
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+          sessionManager: me, store: store, contactAccountId: requesterId)));
+      await tester.pump();
+
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('Accepteren'), findsOneWidget);
+      expect(find.text('Weigeren'), findsOneWidget);
+      expect(find.text('Blokkeren'), findsOneWidget);
+
+      await tester.tap(find.text('Accepteren'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Accepteren'), findsNothing);
+      expect((await store.getContact(requesterId))?.status,
+          ContactStatus.accepted);
+    });
+
+    testWidgets('declining a message request removes the conversation',
+        (tester) async {
+      final server = FakeServer();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      final store = InMemoryLocalStore();
+      final requesterId = '05${'33' * 32}';
+      await store.upsertContact(requesterId, status: ContactStatus.pending);
+      await store.saveMessage(
+          contactId: requesterId, direction: 'in', body: 'spam?');
+
+      await tester.pumpWidget(localizedTestApp(Builder(builder: (context) {
+        return Scaffold(
+          body: Center(
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => ChatPage(
+                    sessionManager: me,
+                    store: store,
+                    contactAccountId: requesterId),
+              )),
+              child: const Text('open'),
+            ),
+          ),
+        );
+      })));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Weigeren'));
+      await tester.pumpAndSettle();
+
+      expect(await store.getContact(requesterId), isNull);
+      expect(await store.messagesWith(requesterId), isEmpty);
+    });
+
+    testWidgets('blocking a contact clears the conversation and shows a banner',
+        (tester) async {
+      final server = FakeServer();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      final store = InMemoryLocalStore();
+      final requesterId = '05${'44' * 32}';
+      await store.upsertContact(requesterId, status: ContactStatus.pending);
+      await store.saveMessage(
+          contactId: requesterId, direction: 'in', body: 'vervelend bericht');
+
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+          sessionManager: me, store: store, contactAccountId: requesterId)));
+      await tester.pump();
+
+      await tester.tap(find.text('Blokkeren'));
+      await tester.pumpAndSettle();
+      // Confirmation dialog.
+      await tester.tap(find.text('Blokkeren').last);
+      await tester.pumpAndSettle();
+
+      expect(
+          (await store.getContact(requesterId))?.status, ContactStatus.blocked);
+      expect(await store.messagesWith(requesterId), isEmpty);
+      expect(find.textContaining('geblokkeerd'), findsWidgets);
+      expect(find.byType(TextField), findsNothing);
     });
   });
 }

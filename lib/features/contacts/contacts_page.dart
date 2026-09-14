@@ -154,14 +154,44 @@ class _ContactsPageState extends State<ContactsPage> {
     await _refreshContacts();
   }
 
-  void _openChat(String contactAccountId) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => ChatPage(
-        sessionManager: widget.sessionManager,
-        store: widget.store,
-        contactAccountId: contactAccountId,
+  Future<bool> _confirmDelete(ContactRecord contact) async {
+    final l10n = AppLocalizations.of(context)!;
+    final name = contact.displayName ?? _shorten(contact.accountId);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteContactConfirmTitle),
+        content: Text(l10n.deleteContactConfirmMessage(name)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.delete),
+          ),
+        ],
       ),
-    ));
+    );
+    if (confirmed == true) {
+      await widget.store.deleteContact(contact.accountId);
+      await _refreshContacts();
+    }
+    return confirmed ?? false;
+  }
+
+  void _openChat(String contactAccountId) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+          builder: (context) => ChatPage(
+            sessionManager: widget.sessionManager,
+            store: widget.store,
+            contactAccountId: contactAccountId,
+          ),
+        ))
+        .then((_) => _refreshContacts());
   }
 
   void _showMyAccountId() {
@@ -193,6 +223,11 @@ class _ContactsPageState extends State<ContactsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final requests =
+        _contacts.where((c) => c.status == ContactStatus.pending).toList();
+    final accepted =
+        _contacts.where((c) => c.status != ContactStatus.pending).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
@@ -221,24 +256,17 @@ class _ContactsPageState extends State<ContactsPage> {
                 child: Text(l10n.noContactsYet, textAlign: TextAlign.center),
               ),
             )
-          : ListView.builder(
-              itemCount: _contacts.length,
-              itemBuilder: (context, index) {
-                final contact = _contacts[index];
-                return ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.person)),
-                  title:
-                      Text(contact.displayName ?? _shorten(contact.accountId)),
-                  subtitle: Text(_shorten(contact.accountId)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    tooltip: l10n.editName,
-                    onPressed: () => _showRenameDialog(contact),
-                  ),
-                  onTap: () => _openChat(contact.accountId),
-                  onLongPress: () => _showRenameDialog(contact),
-                );
-              },
+          : ListView(
+              children: [
+                if (requests.isNotEmpty) ...[
+                  _SectionHeader(l10n.messageRequests),
+                  for (final contact in requests) _contactTile(contact, l10n),
+                  const Divider(),
+                ],
+                if (requests.isNotEmpty && accepted.isNotEmpty)
+                  _SectionHeader(l10n.contactsSectionTitle),
+                for (final contact in accepted) _contactTile(contact, l10n),
+              ],
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddContactDialog,
@@ -248,7 +276,58 @@ class _ContactsPageState extends State<ContactsPage> {
     );
   }
 
+  Widget _contactTile(ContactRecord contact, AppLocalizations l10n) {
+    return Dismissible(
+      key: ValueKey(contact.accountId),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Theme.of(context).colorScheme.error,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Icon(Icons.delete_outline,
+            color: Theme.of(context).colorScheme.onError),
+      ),
+      confirmDismiss: (_) => _confirmDelete(contact),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(contact.status == ContactStatus.pending
+              ? Icons.mail_outline
+              : Icons.person),
+        ),
+        title: Text(contact.displayName ?? _shorten(contact.accountId)),
+        subtitle: Text(_shorten(contact.accountId)),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit_outlined),
+          tooltip: l10n.editName,
+          onPressed: () => _showRenameDialog(contact),
+        ),
+        onTap: () => _openChat(contact.accountId),
+        onLongPress: () => _showRenameDialog(contact),
+      ),
+    );
+  }
+
   String _shorten(String accountId) => accountId.length > 16
       ? '${accountId.substring(0, 8)}…${accountId.substring(accountId.length - 6)}'
       : accountId;
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        text,
+        style: Theme.of(context)
+            .textTheme
+            .labelLarge
+            ?.copyWith(color: Theme.of(context).colorScheme.primary),
+      ),
+    );
+  }
 }

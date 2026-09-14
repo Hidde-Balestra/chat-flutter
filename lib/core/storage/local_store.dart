@@ -1,11 +1,37 @@
 import '../crypto/double_ratchet.dart';
 import '../crypto/prekey_bundle.dart';
 
+/// A contact's relationship to this device.
+///
+/// - [accepted]: a normal, active conversation — either you added them, or
+///   you accepted a message request from them.
+/// - [pending]: someone not already accepted messaged you first. Their
+///   messages are stored (so opening the request shows what they said) but
+///   the conversation doesn't behave normally until accepted.
+/// - [blocked]: any further incoming messages from them are decrypted (to
+///   keep the Double Ratchet chain healthy) but immediately discarded,
+///   never stored or shown.
+enum ContactStatus {
+  accepted,
+  pending,
+  blocked;
+
+  static ContactStatus fromDb(String value) => ContactStatus.values.firstWhere(
+        (status) => status.name == value,
+        orElse: () => ContactStatus.accepted,
+      );
+}
+
 class ContactRecord {
-  ContactRecord({required this.accountId, this.displayName});
+  ContactRecord({
+    required this.accountId,
+    this.displayName,
+    this.status = ContactStatus.accepted,
+  });
 
   final String accountId;
   final String? displayName;
+  final ContactStatus status;
 }
 
 class MessageRecord {
@@ -32,7 +58,17 @@ class MessageRecord {
 /// whole X3DH + Double Ratchet + wire-format pipeline can be exercised
 /// end-to-end without any platform channels.
 abstract class LocalStore {
-  Future<void> upsertContact(String accountId, {String? displayName});
+  /// Creates the contact if it doesn't exist yet (with [status] — defaults
+  /// to already-[ContactStatus.accepted], since this is used when *you*
+  /// add someone or start a conversation yourself). If the contact already
+  /// exists, [status] is ignored — use [setContactStatus] to change an
+  /// existing contact's status explicitly. [displayName], if given, always
+  /// overwrites (same as before).
+  Future<void> upsertContact(
+    String accountId, {
+    String? displayName,
+    ContactStatus status = ContactStatus.accepted,
+  });
 
   /// Sets (or clears, with null) the local nickname for a contact. Unlike
   /// [upsertContact] — where a null [displayName] means "don't touch it" —
@@ -41,6 +77,14 @@ abstract class LocalStore {
   /// contact, and lives in the same SQLCipher-encrypted database as
   /// everything else.
   Future<void> setDisplayName(String accountId, String? displayName);
+
+  Future<void> setContactStatus(String accountId, ContactStatus status);
+
+  /// Removes a contact and their message history entirely (used to decline
+  /// a message request). The Double Ratchet session is deliberately left
+  /// alone — if they message again, it can still be decrypted, and shows up
+  /// as a fresh pending request.
+  Future<void> deleteContact(String accountId);
 
   Future<List<ContactRecord>> listContacts();
 
@@ -54,6 +98,11 @@ abstract class LocalStore {
   });
 
   Future<List<MessageRecord>> messagesWith(String contactId);
+
+  /// Clears message history with a contact without removing the contact
+  /// itself (used when blocking someone, so the conversation view is empty
+  /// going forward but the blocked status sticks).
+  Future<void> deleteMessagesWith(String accountId);
 
   Future<void> saveSession(String contactId, DoubleRatchetSession session);
 

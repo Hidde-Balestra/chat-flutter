@@ -4,6 +4,7 @@ import 'package:privacychat/core/crypto/identity_key_pair.dart';
 import 'package:privacychat/core/messaging/session_manager.dart';
 import 'package:privacychat/core/security/app_lock_controller.dart';
 import 'package:privacychat/core/settings/locale_controller.dart';
+import 'package:privacychat/core/storage/local_store.dart';
 import 'package:privacychat/features/chat/chat_page.dart';
 import 'package:privacychat/features/contacts/contacts_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -154,6 +155,46 @@ void main() {
 
       expect(find.text('Instellingen'), findsOneWidget);
       expect(find.text('App vergrendelen met pincode'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows a message-requests section, separate from accepted contacts, '
+        'and lets you swipe to delete a contact', (tester) async {
+      final server = FakeServer();
+      final store = InMemoryLocalStore();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: store,
+      );
+      await me.bootstrap();
+
+      final requesterId = '05${'55' * 32}';
+      final friendId = '05${'66' * 32}';
+      await store.upsertContact(requesterId, status: ContactStatus.pending);
+      await store.upsertContact(friendId,
+          displayName: 'Vriend', status: ContactStatus.accepted);
+
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: store,
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
+      await tester.pump();
+
+      expect(find.text('Berichtverzoeken'), findsOneWidget);
+      expect(find.text('Contacten'), findsOneWidget);
+      expect(find.text('Vriend'), findsOneWidget);
+
+      // Swipe the accepted contact away and confirm deletion.
+      await tester.drag(find.text('Vriend'), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Verwijderen').last);
+      await tester.pumpAndSettle();
+
+      expect(await store.getContact(friendId), isNull);
+      expect(find.text('Vriend'), findsNothing);
     });
   });
 }

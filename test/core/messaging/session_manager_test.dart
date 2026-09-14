@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:privacychat/core/crypto/identity_key_pair.dart';
 import 'package:privacychat/core/messaging/session_manager.dart';
+import 'package:privacychat/core/storage/local_store.dart';
 
 import 'fakes.dart';
 
@@ -170,6 +171,91 @@ void main() {
       expect(updates, {aliceId});
       expect(
           (await bobStore.messagesWith(aliceId)).single.body, 'werkt dit nog?');
+    });
+
+    test('a first message from someone new lands as a pending request',
+        () async {
+      final server = FakeServer();
+      final aliceIdentity = await IdentityKeyPair.generateRandom();
+      final bobIdentity = await IdentityKeyPair.generateRandom();
+      final bobStore = InMemoryLocalStore();
+
+      final alice = SessionManager(
+        identity: aliceIdentity,
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      final bob = SessionManager(
+          identity: bobIdentity,
+          backend: FakeChatBackend(server),
+          store: bobStore);
+      await alice.bootstrap();
+      await bob.bootstrap();
+      final aliceId = await alice.accountId;
+
+      await alice.sendMessage(await bob.accountId, 'hoi, onbekende!');
+      await bob.pollAndDecrypt();
+
+      final contact = await bobStore.getContact(aliceId);
+      expect(contact?.status, ContactStatus.pending);
+
+      // A second message from the same still-pending sender doesn't get
+      // lost or re-flip anything odd — it's just appended, still pending.
+      await alice.sendMessage(await bob.accountId, 'nog een berichtje');
+      await bob.pollAndDecrypt();
+
+      expect(
+          (await bobStore.getContact(aliceId))?.status, ContactStatus.pending);
+      final messages = await bobStore.messagesWith(aliceId);
+      expect(messages.map((m) => m.body),
+          containsAll(['hoi, onbekende!', 'nog een berichtje']));
+    });
+
+    test(
+        'messages from a blocked contact are decrypted (to keep the ratchet '
+        'healthy) but never stored or surfaced', () async {
+      final server = FakeServer();
+      final aliceIdentity = await IdentityKeyPair.generateRandom();
+      final bobIdentity = await IdentityKeyPair.generateRandom();
+      final bobStore = InMemoryLocalStore();
+
+      final alice = SessionManager(
+        identity: aliceIdentity,
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      final bob = SessionManager(
+          identity: bobIdentity,
+          backend: FakeChatBackend(server),
+          store: bobStore);
+      await alice.bootstrap();
+      await bob.bootstrap();
+      final aliceId = await alice.accountId;
+
+      await alice.sendMessage(await bob.accountId, 'eerste bericht');
+      await bob.pollAndDecrypt();
+      await bobStore.setContactStatus(aliceId, ContactStatus.blocked);
+
+      final updates = await alice
+          .sendMessage(await bob.accountId, 'tweede bericht, geblokkeerd')
+          .then((_) => bob.pollAndDecrypt());
+
+      expect(updates, isEmpty);
+      final messages = await bobStore.messagesWith(aliceId);
+      expect(messages.map((m) => m.body),
+          isNot(contains('tweede bericht, geblokkeerd')));
+
+      // The ratchet chain still advanced, though — unblocking and getting a
+      // *third* message must still work.
+      await bobStore.setContactStatus(aliceId, ContactStatus.accepted);
+      await alice.sendMessage(
+          await bob.accountId, 'derde bericht, na deblokkeren');
+      final laterUpdates = await bob.pollAndDecrypt();
+
+      expect(laterUpdates, {aliceId});
+      final laterMessages = await bobStore.messagesWith(aliceId);
+      expect(laterMessages.map((m) => m.body),
+          contains('derde bericht, na deblokkeren'));
     });
   });
 }

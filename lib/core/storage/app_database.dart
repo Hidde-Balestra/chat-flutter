@@ -44,13 +44,14 @@ class AppDatabase {
     final db = await openDatabase(
       dbPath,
       password: passphrase,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE contacts (
             account_id TEXT PRIMARY KEY,
             display_name TEXT,
-            added_at INTEGER NOT NULL
+            added_at INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'accepted'
           )
         ''');
         await db.execute('''
@@ -86,6 +87,15 @@ class AppDatabase {
             used INTEGER NOT NULL DEFAULT 0
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Message requests: every contact that already existed before
+          // this feature shipped was already a normal, active conversation
+          // — 'accepted' is the correct default for all of them.
+          await db.execute(
+              "ALTER TABLE contacts ADD COLUMN status TEXT NOT NULL DEFAULT 'accepted'");
+        }
       },
     );
 

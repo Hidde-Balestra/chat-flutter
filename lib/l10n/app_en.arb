@@ -48,5 +48,30 @@
   "next": "Next",
   "setPinAction": "Set",
   "unlockAction": "Unlock",
-  "turnOffAction": "Turn off"
+  "turnOffAction": "Turn off",
+
+  "messageRequests": "Message requests",
+  "contactsSectionTitle": "Contacts",
+  "deleteContact": "Delete",
+  "deleteContactConfirmTitle": "Delete this contact?",
+  "deleteContactConfirmMessage": "This removes the conversation and all messages with {name}. This can't be undone.",
+  "@deleteContactConfirmMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "delete": "Delete",
+  "messageRequestBanner": "Message request — accept to reply, or decline/block.",
+  "accept": "Accept",
+  "decline": "Decline",
+  "block": "Block",
+  "blockContactConfirmTitle": "Block this contact?",
+  "blockContactConfirmMessage": "{name} will no longer be able to message you. This clears the current conversation.",
+  "@blockContactConfirmMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockedBanner": "You've blocked this contact. They can no longer message you.",
+  "unblock": "Unblock"
 }

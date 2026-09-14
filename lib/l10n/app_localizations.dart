@@ -325,6 +325,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn off'**
   String get turnOffAction;
+
+  /// No description provided for @messageRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Message requests'**
+  String get messageRequests;
+
+  /// No description provided for @contactsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts'**
+  String get contactsSectionTitle;
+
+  /// No description provided for @deleteContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteContact;
+
+  /// No description provided for @deleteContactConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this contact?'**
+  String get deleteContactConfirmTitle;
+
+  /// No description provided for @deleteContactConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the conversation and all messages with {name}. This can\'t be undone.'**
+  String deleteContactConfirmMessage(String name);
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @messageRequestBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Message request — accept to reply, or decline/block.'**
+  String get messageRequestBanner;
+
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// No description provided for @decline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get decline;
+
+  /// No description provided for @block.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get block;
+
+  /// No description provided for @blockContactConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this contact?'**
+  String get blockContactConfirmTitle;
+
+  /// No description provided for @blockContactConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will no longer be able to message you. This clears the current conversation.'**
+  String blockContactConfirmMessage(String name);
+
+  /// No description provided for @blockedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve blocked this contact. They can no longer message you.'**
+  String get blockedBanner;
+
+  /// No description provided for @unblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblock;
 }
 
 class _AppLocalizationsDelegate

@@ -129,4 +129,52 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get turnOffAction => 'Uitzetten';
+
+  @override
+  String get messageRequests => 'Berichtverzoeken';
+
+  @override
+  String get contactsSectionTitle => 'Contacten';
+
+  @override
+  String get deleteContact => 'Verwijderen';
+
+  @override
+  String get deleteContactConfirmTitle => 'Dit contact verwijderen?';
+
+  @override
+  String deleteContactConfirmMessage(String name) {
+    return 'Dit verwijdert het gesprek en alle berichten met $name. Dit kan niet ongedaan gemaakt worden.';
+  }
+
+  @override
+  String get delete => 'Verwijderen';
+
+  @override
+  String get messageRequestBanner =>
+      'Berichtverzoek — accepteer om te reageren, of weiger/blokkeer.';
+
+  @override
+  String get accept => 'Accepteren';
+
+  @override
+  String get decline => 'Weigeren';
+
+  @override
+  String get block => 'Blokkeren';
+
+  @override
+  String get blockContactConfirmTitle => 'Dit contact blokkeren?';
+
+  @override
+  String blockContactConfirmMessage(String name) {
+    return '$name kan je dan niet meer berichten. Dit maakt het huidige gesprek leeg.';
+  }
+
+  @override
+  String get blockedBanner =>
+      'Je hebt dit contact geblokkeerd. Diegene kan je niet meer berichten.';
+
+  @override
+  String get unblock => 'Deblokkeren';
 }

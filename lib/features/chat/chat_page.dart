@@ -25,6 +25,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   List<MessageRecord> _messages = [];
   String? _displayName;
+  ContactStatus _status = ContactStatus.accepted;
   final _controller = TextEditingController();
   Timer? _pollTimer;
   bool _sending = false;
@@ -40,7 +41,10 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _loadContact() async {
     final contact = await widget.store.getContact(widget.contactAccountId);
     if (!mounted) return;
-    setState(() => _displayName = contact?.displayName);
+    setState(() {
+      _displayName = contact?.displayName;
+      _status = contact?.status ?? ContactStatus.accepted;
+    });
   }
 
   @override
@@ -67,6 +71,7 @@ class _ChatPageState extends State<ChatPage> {
       // transient network error — just retry on the next tick
     }
     await _refresh();
+    await _loadContact();
   }
 
   Future<void> _refresh() async {
@@ -98,15 +103,72 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  Future<void> _accept() async {
+    await widget.store
+        .setContactStatus(widget.contactAccountId, ContactStatus.accepted);
+    if (!mounted) return;
+    setState(() => _status = ContactStatus.accepted);
+  }
+
+  Future<void> _decline() async {
+    await widget.store.deleteContact(widget.contactAccountId);
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _block() async {
+    final l10n = AppLocalizations.of(context)!;
+    final name = _displayName ?? _shorten(widget.contactAccountId);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.blockContactConfirmTitle),
+        content: Text(l10n.blockContactConfirmMessage(name)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.block),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await widget.store
+        .setContactStatus(widget.contactAccountId, ContactStatus.blocked);
+    await widget.store.deleteMessagesWith(widget.contactAccountId);
+    if (!mounted) return;
+    setState(() {
+      _status = ContactStatus.blocked;
+      _messages = [];
+    });
+  }
+
+  Future<void> _unblock() async {
+    await widget.store
+        .setContactStatus(widget.contactAccountId, ContactStatus.accepted);
+    if (!mounted) return;
+    setState(() => _status = ContactStatus.accepted);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final inputEnabled = _status == ContactStatus.accepted;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_displayName ?? _shorten(widget.contactAccountId)),
       ),
       body: Column(
         children: [
+          if (_status == ContactStatus.pending) _requestBanner(l10n),
+          if (_status == ContactStatus.blocked) _blockedBanner(l10n),
           Expanded(
             child: _messages.isEmpty
                 ? Center(child: Text(l10n.noMessagesYet))
@@ -120,32 +182,101 @@ class _ChatPageState extends State<ChatPage> {
                     },
                   ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
+          if (inputEnabled)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: l10n.typeMessageHint,
+                          border: const OutlineInputBorder(),
+                        ),
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _send(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      onPressed: _sending ? null : _send,
+                      icon: const Icon(Icons.send),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _requestBanner(AppLocalizations l10n) {
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(l10n.messageRequestBanner, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: l10n.typeMessageHint,
-                        border: const OutlineInputBorder(),
-                      ),
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _send(),
+                    child: OutlinedButton(
+                      onPressed: _block,
+                      child: Text(l10n.block),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: _sending ? null : _send,
-                    icon: const Icon(Icons.send),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _decline,
+                      child: Text(l10n.decline),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _accept,
+                      child: Text(l10n.accept),
+                    ),
                   ),
                 ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _blockedBanner(AppLocalizations l10n) {
+    return Material(
+      color: Theme.of(context).colorScheme.errorContainer,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.blockedBanner,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton(onPressed: _unblock, child: Text(l10n.unblock)),
+            ],
+          ),
+        ),
       ),
     );
   }

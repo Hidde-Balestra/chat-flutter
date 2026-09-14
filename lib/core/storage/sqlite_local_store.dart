@@ -15,7 +15,11 @@ class SqliteLocalStore implements LocalStore {
   final AppDatabase _db;
 
   @override
-  Future<void> upsertContact(String accountId, {String? displayName}) async {
+  Future<void> upsertContact(
+    String accountId, {
+    String? displayName,
+    ContactStatus status = ContactStatus.accepted,
+  }) async {
     final existing = await _db.raw.query(
       'contacts',
       where: 'account_id = ?',
@@ -28,6 +32,7 @@ class SqliteLocalStore implements LocalStore {
         'account_id': accountId,
         'display_name': displayName,
         'added_at': DateTime.now().millisecondsSinceEpoch,
+        'status': status.name,
       });
     } else if (displayName != null) {
       await _db.raw.update(
@@ -50,6 +55,24 @@ class SqliteLocalStore implements LocalStore {
   }
 
   @override
+  Future<void> setContactStatus(String accountId, ContactStatus status) async {
+    await _db.raw.update(
+      'contacts',
+      {'status': status.name},
+      where: 'account_id = ?',
+      whereArgs: [accountId],
+    );
+  }
+
+  @override
+  Future<void> deleteContact(String accountId) async {
+    await _db.raw
+        .delete('contacts', where: 'account_id = ?', whereArgs: [accountId]);
+    await _db.raw
+        .delete('messages', where: 'contact_id = ?', whereArgs: [accountId]);
+  }
+
+  @override
   Future<ContactRecord?> getContact(String accountId) async {
     final rows = await _db.raw.query(
       'contacts',
@@ -63,6 +86,8 @@ class SqliteLocalStore implements LocalStore {
     return ContactRecord(
       accountId: rows.first['account_id'] as String,
       displayName: rows.first['display_name'] as String?,
+      status:
+          ContactStatus.fromDb(rows.first['status'] as String? ?? 'accepted'),
     );
   }
 
@@ -73,6 +98,8 @@ class SqliteLocalStore implements LocalStore {
         .map((row) => ContactRecord(
               accountId: row['account_id'] as String,
               displayName: row['display_name'] as String?,
+              status:
+                  ContactStatus.fromDb(row['status'] as String? ?? 'accepted'),
             ))
         .toList();
   }
@@ -110,6 +137,12 @@ class SqliteLocalStore implements LocalStore {
                   DateTime.fromMillisecondsSinceEpoch(row['sent_at'] as int),
             ))
         .toList();
+  }
+
+  @override
+  Future<void> deleteMessagesWith(String accountId) async {
+    await _db.raw
+        .delete('messages', where: 'contact_id = ?', whereArgs: [accountId]);
   }
 
   @override

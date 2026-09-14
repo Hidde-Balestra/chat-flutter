@@ -48,5 +48,30 @@
   "next": "Volgende",
   "setPinAction": "Instellen",
   "unlockAction": "Ontgrendelen",
-  "turnOffAction": "Uitzetten"
+  "turnOffAction": "Uitzetten",
+
+  "messageRequests": "Berichtverzoeken",
+  "contactsSectionTitle": "Contacten",
+  "deleteContact": "Verwijderen",
+  "deleteContactConfirmTitle": "Dit contact verwijderen?",
+  "deleteContactConfirmMessage": "Dit verwijdert het gesprek en alle berichten met {name}. Dit kan niet ongedaan gemaakt worden.",
+  "@deleteContactConfirmMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "delete": "Verwijderen",
+  "messageRequestBanner": "Berichtverzoek — accepteer om te reageren, of weiger/blokkeer.",
+  "accept": "Accepteren",
+  "decline": "Weigeren",
+  "block": "Blokkeren",
+  "blockContactConfirmTitle": "Dit contact blokkeren?",
+  "blockContactConfirmMessage": "{name} kan je dan niet meer berichten. Dit maakt het huidige gesprek leeg.",
+  "@blockContactConfirmMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockedBanner": "Je hebt dit contact geblokkeerd. Diegene kan je niet meer berichten.",
+  "unblock": "Deblokkeren"
 }

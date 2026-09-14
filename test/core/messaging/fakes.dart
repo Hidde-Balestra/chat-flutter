@@ -215,20 +215,50 @@ class InMemoryLocalStore implements LocalStore {
   final Map<int, OneTimePreKey> _oneTimePreKeys = {};
 
   @override
-  Future<void> upsertContact(String accountId, {String? displayName}) async {
+  Future<void> upsertContact(
+    String accountId, {
+    String? displayName,
+    ContactStatus status = ContactStatus.accepted,
+  }) async {
     final existing = _contacts[accountId];
-    _contacts[accountId] = ContactRecord(
-      accountId: accountId,
-      displayName: displayName ?? existing?.displayName,
-    );
+    if (existing == null) {
+      _contacts[accountId] = ContactRecord(
+          accountId: accountId, displayName: displayName, status: status);
+    } else if (displayName != null) {
+      _contacts[accountId] = ContactRecord(
+        accountId: accountId,
+        displayName: displayName,
+        status: existing.status,
+      );
+    }
   }
 
   @override
   Future<void> setDisplayName(String accountId, String? displayName) async {
     final existing = _contacts[accountId];
     if (existing == null) return;
-    _contacts[accountId] =
-        ContactRecord(accountId: accountId, displayName: displayName);
+    _contacts[accountId] = ContactRecord(
+      accountId: accountId,
+      displayName: displayName,
+      status: existing.status,
+    );
+  }
+
+  @override
+  Future<void> setContactStatus(String accountId, ContactStatus status) async {
+    final existing = _contacts[accountId];
+    if (existing == null) return;
+    _contacts[accountId] = ContactRecord(
+      accountId: accountId,
+      displayName: existing.displayName,
+      status: status,
+    );
+  }
+
+  @override
+  Future<void> deleteContact(String accountId) async {
+    _contacts.remove(accountId);
+    _messages.removeWhere((message) => message.contactId == accountId);
   }
 
   @override
@@ -257,6 +287,11 @@ class InMemoryLocalStore implements LocalStore {
   @override
   Future<List<MessageRecord>> messagesWith(String contactId) async =>
       _messages.where((message) => message.contactId == contactId).toList();
+
+  @override
+  Future<void> deleteMessagesWith(String accountId) async {
+    _messages.removeWhere((message) => message.contactId == accountId);
+  }
 
   @override
   Future<void> saveSession(
