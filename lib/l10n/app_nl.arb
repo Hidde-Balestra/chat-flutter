@@ -1,0 +1,52 @@
+{
+  "@@locale": "nl",
+
+  "appTitle": "PrivacyChat",
+
+  "startupPreparingIdentity": "Je identiteit wordt voorbereid…",
+  "startupLocalStorageErrorTitle": "Kan de lokale, versleutelde opslag niet openen.",
+  "retry": "Opnieuw proberen",
+
+  "myAccountId": "Jouw Account ID",
+  "shareAccountIdExplanation": "Deel dit met iemand om te kunnen chatten. Er zit geen persoonlijke data in.",
+  "close": "Sluiten",
+
+  "addContact": "Contact toevoegen",
+  "contactAccountIdHint": "Account ID van je contact",
+  "contactNameHint": "Naam (optioneel, alleen op dit toestel)",
+  "cancel": "Annuleren",
+  "add": "Toevoegen",
+  "editName": "Naam aanpassen",
+  "editNameHint": "Naam (alleen op dit toestel, leeg = geen naam)",
+  "save": "Opslaan",
+  "noContactsYet": "Nog geen contacten. Tik op + en voer het Account ID van iemand in om te beginnen.",
+
+  "typeMessageHint": "Typ een bericht…",
+  "noMessagesYet": "Nog geen berichten. Zeg iets!",
+  "sendFailed": "Versturen mislukt: {error}",
+  "@sendFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "settingsTitle": "Instellingen",
+  "settingsLanguage": "Taal",
+  "settingsLanguageSystem": "Systeemtaal",
+  "settingsSecurity": "Beveiliging",
+  "settingsAppLock": "App vergrendelen met pincode",
+  "settingsAppLockSubtitle": "Vereist een pincode om de app te openen, bovenop de versleuteling die er al is",
+  "settingsAppLockSetTitle": "Stel een pincode in",
+  "settingsAppLockConfirmTitle": "Bevestig je pincode",
+  "settingsAppLockDisableTitle": "Voer je pincode in om dit uit te zetten",
+  "settingsAppLockUnlockTitle": "Voer je pincode in",
+  "settingsAppLockPinMismatch": "Pincodes komen niet overeen — probeer opnieuw",
+  "settingsAppLockWrongPin": "Onjuiste pincode",
+  "settingsAppLockMinLength": "Gebruik minstens 4 cijfers",
+  "pinHint": "Pincode",
+  "settingsAppLockChooseTitle": "Kies een pincode",
+  "next": "Volgende",
+  "setPinAction": "Instellen",
+  "unlockAction": "Ontgrendelen",
+  "turnOffAction": "Uitzetten"
+}

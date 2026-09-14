@@ -17,16 +17,25 @@ class AppDatabase {
 
   final Database raw;
 
-  static const _passphraseKey = 'local_db_passphrase_v1';
+  /// Shared with [AppLockController], which moves the value living under
+  /// this key into a PIN-encrypted form instead — see its doc comment.
+  static const passphraseStorageKey = 'local_db_passphrase_v1';
   static const _secureStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
-  static Future<AppDatabase> open({String fileName = 'privacychat.db'}) async {
-    var passphrase = await _secureStorage.read(key: _passphraseKey);
+  /// Opens the encrypted local database. If [passphrase] is given, it's used
+  /// as-is (the caller — [AppLockController] — already unwrapped it with the
+  /// user's PIN); otherwise the passphrase is read from (or, on first ever
+  /// launch, generated into) the platform keystore, unlocking automatically.
+  static Future<AppDatabase> open({
+    String fileName = 'privacychat.db',
+    String? passphrase,
+  }) async {
+    passphrase ??= await _secureStorage.read(key: passphraseStorageKey);
     if (passphrase == null) {
       passphrase = _randomPassphrase();
-      await _secureStorage.write(key: _passphraseKey, value: passphrase);
+      await _secureStorage.write(key: passphraseStorageKey, value: passphrase);
     }
 
     final directory = await getApplicationDocumentsDirectory();

@@ -1,0 +1,52 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "PrivacyChat",
+
+  "startupPreparingIdentity": "Preparing your identity…",
+  "startupLocalStorageErrorTitle": "Can't open the local, encrypted storage.",
+  "retry": "Try again",
+
+  "myAccountId": "My Account ID",
+  "shareAccountIdExplanation": "Share this with someone you want to chat with. It contains no personal data.",
+  "close": "Close",
+
+  "addContact": "Add contact",
+  "contactAccountIdHint": "Your contact's Account ID",
+  "contactNameHint": "Name (optional, only on this device)",
+  "cancel": "Cancel",
+  "add": "Add",
+  "editName": "Edit name",
+  "editNameHint": "Name (only on this device, empty = no name)",
+  "save": "Save",
+  "noContactsYet": "No contacts yet. Tap + and enter someone's Account ID to get started.",
+
+  "typeMessageHint": "Type a message…",
+  "noMessagesYet": "No messages yet. Say something!",
+  "sendFailed": "Couldn't send: {error}",
+  "@sendFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "settingsTitle": "Settings",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System language",
+  "settingsSecurity": "Security",
+  "settingsAppLock": "Lock app with a PIN",
+  "settingsAppLockSubtitle": "Requires a PIN to open the app, on top of the encryption it already has",
+  "settingsAppLockSetTitle": "Set a PIN",
+  "settingsAppLockConfirmTitle": "Confirm your PIN",
+  "settingsAppLockDisableTitle": "Enter your PIN to turn this off",
+  "settingsAppLockUnlockTitle": "Enter your PIN",
+  "settingsAppLockPinMismatch": "PINs don't match — try again",
+  "settingsAppLockWrongPin": "Incorrect PIN",
+  "settingsAppLockMinLength": "Use at least 4 digits",
+  "pinHint": "PIN",
+  "settingsAppLockChooseTitle": "Choose a PIN",
+  "next": "Next",
+  "setPinAction": "Set",
+  "unlockAction": "Unlock",
+  "turnOffAction": "Turn off"
+}

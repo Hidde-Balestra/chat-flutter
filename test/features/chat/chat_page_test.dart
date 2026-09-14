@@ -5,6 +5,7 @@ import 'package:privacychat/core/messaging/session_manager.dart';
 import 'package:privacychat/features/chat/chat_page.dart';
 
 import '../../core/messaging/fakes.dart';
+import '../../test_helpers/localized_test_app.dart';
 
 void main() {
   group('ChatPage', () {
@@ -33,10 +34,8 @@ void main() {
       await meStore.saveMessage(
           contactId: contactId, direction: 'in', body: 'hoi!');
 
-      await tester.pumpWidget(MaterialApp(
-        home: ChatPage(
-            sessionManager: me, store: meStore, contactAccountId: contactId),
-      ));
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+          sessionManager: me, store: meStore, contactAccountId: contactId)));
       await tester.pump();
 
       expect(find.text('hoi!'), findsOneWidget);
@@ -71,10 +70,8 @@ void main() {
       await contact.bootstrap();
       final contactId = await contact.accountId;
 
-      await tester.pumpWidget(MaterialApp(
-        home: ChatPage(
-            sessionManager: me, store: meStore, contactAccountId: contactId),
-      ));
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+          sessionManager: me, store: meStore, contactAccountId: contactId)));
       await tester.pump();
       expect(find.text('binnengekomen via een andere poller'), findsNothing);
 
@@ -106,13 +103,11 @@ void main() {
       );
       await me.bootstrap();
 
-      await tester.pumpWidget(MaterialApp(
-        home: ChatPage(
-          sessionManager: me,
-          store: InMemoryLocalStore(),
-          contactAccountId: '05${'11' * 32}',
-        ),
-      ));
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+        sessionManager: me,
+        store: InMemoryLocalStore(),
+        contactAccountId: '05${'11' * 32}',
+      )));
       await tester.pump();
 
       expect(find.text('Nog geen berichten. Zeg iets!'), findsOneWidget);

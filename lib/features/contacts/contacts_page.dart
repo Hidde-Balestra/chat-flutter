@@ -3,15 +3,26 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/messaging/session_manager.dart';
+import '../../core/security/app_lock_controller.dart';
+import '../../core/settings/locale_controller.dart';
 import '../../core/storage/local_store.dart';
+import '../../l10n/app_localizations.dart';
 import '../chat/chat_page.dart';
+import '../settings/settings_page.dart';
 
 class ContactsPage extends StatefulWidget {
-  const ContactsPage(
-      {super.key, required this.sessionManager, required this.store});
+  const ContactsPage({
+    super.key,
+    required this.sessionManager,
+    required this.store,
+    required this.localeController,
+    required this.appLock,
+  });
 
   final SessionManager sessionManager;
   final LocalStore store;
+  final LocaleController localeController;
+  final AppLockController appLock;
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
@@ -65,38 +76,36 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   Future<void> _showAddContactDialog() async {
+    final l10n = AppLocalizations.of(context)!;
     final idController = TextEditingController();
     final nameController = TextEditingController();
     final result = await showDialog<(String, String)>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Contact toevoegen'),
+        title: Text(l10n.addContact),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: idController,
               autofocus: true,
-              decoration:
-                  const InputDecoration(hintText: 'Account ID van je contact'),
+              decoration: InputDecoration(hintText: l10n.contactAccountIdHint),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                hintText: 'Naam (optioneel, alleen op dit toestel)',
-              ),
+              decoration: InputDecoration(hintText: l10n.contactNameHint),
             ),
           ],
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuleren')),
+              child: Text(l10n.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context,
                 (idController.text.trim(), nameController.text.trim())),
-            child: const Text('Toevoegen'),
+            child: Text(l10n.add),
           ),
         ],
       ),
@@ -114,25 +123,24 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   Future<void> _showRenameDialog(ContactRecord contact) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: contact.displayName ?? '');
     final name = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Naam aanpassen'),
+        title: Text(l10n.editName),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Naam (alleen op dit toestel, leeg = geen naam)',
-          ),
+          decoration: InputDecoration(hintText: l10n.editNameHint),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuleren')),
+              child: Text(l10n.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Opslaan'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -157,16 +165,16 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   void _showMyAccountId() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Jouw Account ID'),
+        title: Text(l10n.myAccountId),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-                'Deel dit met iemand om te kunnen chatten. Er zit geen persoonlijke data in.'),
+            Text(l10n.shareAccountIdExplanation),
             const SizedBox(height: 12),
             SelectableText(
               _myAccountId ?? '…',
@@ -176,8 +184,7 @@ class _ContactsPageState extends State<ContactsPage> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Sluiten'))
+              onPressed: () => Navigator.pop(context), child: Text(l10n.close))
         ],
       ),
     );
@@ -185,25 +192,33 @@ class _ContactsPageState extends State<ContactsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PrivacyChat'),
+        title: Text(l10n.appTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.badge_outlined),
-            tooltip: 'Mijn Account ID',
+            tooltip: l10n.myAccountId,
             onPressed: _showMyAccountId,
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: l10n.settingsTitle,
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => SettingsPage(
+                localeController: widget.localeController,
+                appLock: widget.appLock,
+              ),
+            )),
           ),
         ],
       ),
       body: _contacts.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Nog geen contacten. Tik op + en voer het Account ID van iemand in om te beginnen.',
-                  textAlign: TextAlign.center,
-                ),
+                padding: const EdgeInsets.all(24),
+                child: Text(l10n.noContactsYet, textAlign: TextAlign.center),
               ),
             )
           : ListView.builder(
@@ -217,7 +232,7 @@ class _ContactsPageState extends State<ContactsPage> {
                   subtitle: Text(_shorten(contact.accountId)),
                   trailing: IconButton(
                     icon: const Icon(Icons.edit_outlined),
-                    tooltip: 'Naam aanpassen',
+                    tooltip: l10n.editName,
                     onPressed: () => _showRenameDialog(contact),
                   ),
                   onTap: () => _openChat(contact.accountId),
@@ -227,7 +242,7 @@ class _ContactsPageState extends State<ContactsPage> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddContactDialog,
-        tooltip: 'Contact toevoegen',
+        tooltip: l10n.addContact,
         child: const Icon(Icons.add),
       ),
     );

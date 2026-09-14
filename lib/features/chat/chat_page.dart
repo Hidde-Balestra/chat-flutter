@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/messaging/session_manager.dart';
 import '../../core/storage/local_store.dart';
+import '../../l10n/app_localizations.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({
@@ -86,7 +87,10 @@ class _ChatPageState extends State<ChatPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Versturen mislukt: $e')),
+          SnackBar(
+            content:
+                Text(AppLocalizations.of(context)!.sendFailed(e.toString())),
+          ),
         );
       }
     } finally {
@@ -96,6 +100,7 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(_displayName ?? _shorten(widget.contactAccountId)),
@@ -104,7 +109,7 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           Expanded(
             child: _messages.isEmpty
-                ? const Center(child: Text('Nog geen berichten. Zeg iets!'))
+                ? Center(child: Text(l10n.noMessagesYet))
                 : ListView.builder(
                     reverse: true,
                     padding: const EdgeInsets.all(12),
@@ -123,9 +128,9 @@ class _ChatPageState extends State<ChatPage> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
-                      decoration: const InputDecoration(
-                        hintText: 'Typ een bericht…',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        hintText: l10n.typeMessageHint,
+                        border: const OutlineInputBorder(),
                       ),
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _send(),

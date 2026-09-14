@@ -2,12 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:privacychat/core/crypto/identity_key_pair.dart';
 import 'package:privacychat/core/messaging/session_manager.dart';
+import 'package:privacychat/core/security/app_lock_controller.dart';
+import 'package:privacychat/core/settings/locale_controller.dart';
 import 'package:privacychat/features/chat/chat_page.dart';
 import 'package:privacychat/features/contacts/contacts_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/messaging/fakes.dart';
+import '../../test_helpers/fake_secure_storage.dart';
+import '../../test_helpers/localized_test_app.dart';
+
+// Tiny on purpose — see settings_page_test.dart for why: the real 210k-
+// iteration work factor is slow enough to make pumpAndSettle hang against
+// an indeterminate progress spinner elsewhere in these tests' widget tree.
+AppLockController _testAppLock() => AppLockController(pbkdf2Iterations: 10);
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    installFakeSecureStorage();
+  });
+
   group('ContactsPage', () {
     testWidgets(
         'shows an empty state, then opens a chat after adding a contact',
@@ -29,8 +44,12 @@ void main() {
       await contact.bootstrap();
       final contactId = await contact.accountId;
 
-      await tester.pumpWidget(
-          MaterialApp(home: ContactsPage(sessionManager: me, store: store)));
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: store,
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
       await tester.pump();
 
       expect(find.textContaining('Nog geen contacten'), findsOneWidget);
@@ -66,8 +85,12 @@ void main() {
       final contactId = await contact.accountId;
       await store.upsertContact(contactId);
 
-      await tester.pumpWidget(
-          MaterialApp(home: ContactsPage(sessionManager: me, store: store)));
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: store,
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
       await tester.pump();
 
       await tester.tap(find.byIcon(Icons.edit_outlined));
@@ -91,11 +114,12 @@ void main() {
       await me.bootstrap();
       final expectedId = await me.accountId;
 
-      await tester.pumpWidget(
-        MaterialApp(
-            home:
-                ContactsPage(sessionManager: me, store: InMemoryLocalStore())),
-      );
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: InMemoryLocalStore(),
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
       await tester.pump();
 
       await tester.tap(find.byIcon(Icons.badge_outlined));
@@ -106,6 +130,30 @@ void main() {
             (widget) => widget is SelectableText && widget.data == expectedId),
         findsOneWidget,
       );
+    });
+
+    testWidgets('opens Settings from the app bar', (tester) async {
+      final server = FakeServer();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: InMemoryLocalStore(),
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
+      await tester.pump();
+
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Instellingen'), findsOneWidget);
+      expect(find.text('App vergrendelen met pincode'), findsOneWidget);
     });
   });
 }
