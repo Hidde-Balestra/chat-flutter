@@ -13,8 +13,8 @@ key.properties
 **/*.keystore
 **/*.jks
 
-# Exception: keystore/alpha.jks is intentionally committed — a stable,
+# Exception: app/keystore/alpha.jks is intentionally committed — a stable,
 # low-stakes self-signed key used only so alpha builds can be installed as
 # updates instead of every CI build getting a fresh random signature. Not a
 # real release key; see the TODO next to signingConfigs in build.gradle.kts.
-!keystore/alpha.jks
+!app/keystore/alpha.jks
