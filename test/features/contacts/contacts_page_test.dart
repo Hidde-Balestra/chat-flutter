@@ -268,5 +268,42 @@ void main() {
 
       expect(find.byIcon(Icons.qr_code_scanner), findsOneWidget);
     });
+
+    testWidgets(
+        'always shows a pinned "yourself" entry, even with no contacts, '
+        'and opens a working self-chat', (tester) async {
+      final server = FakeServer();
+      final store = InMemoryLocalStore();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: store,
+      );
+      await me.bootstrap();
+
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: store,
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
+      await tester.pump();
+
+      // The empty state and the pinned self-chat entry coexist.
+      expect(find.textContaining('Nog geen contacten'), findsOneWidget);
+      expect(find.text('Jezelf'), findsOneWidget);
+
+      await tester.tap(find.text('Jezelf'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ChatPage), findsOneWidget);
+      expect(find.text('Jezelf'), findsWidgets); // now also the app bar title
+
+      await tester.enterText(find.byType(TextField), 'test notitie');
+      await tester.tap(find.byIcon(Icons.send));
+      await tester.pumpAndSettle();
+
+      expect(find.text('test notitie'), findsOneWidget);
+    });
   });
 }

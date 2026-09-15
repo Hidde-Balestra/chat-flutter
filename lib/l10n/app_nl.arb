@@ -183,5 +183,14 @@
   "helpQrBody": "Bij \"Contact toevoegen\" kun je op het scan-icoontje tikken om iemands QR-code te scannen in plaats van het Account ID over te typen. Andersom kan ook: laat iemand jouw Account ID-scherm scannen (tik op het naamplaatje-icoontje rechtsboven) om jou toe te voegen.",
 
   "helpSafetyNumberTitle": "Zeker weten dat je met de juiste persoon praat",
-  "helpSafetyNumberBody": "Tik in een gesprek boven op de naam van je contact en kies \"Veiligheidsnummer\". Dat is een reeks cijfers die alleen klopt als jullie apps rechtstreeks met elkaar praten, zonder dat iemand ertussen zit. Spreek het samen af — bijvoorbeeld door het hardop voor te lezen — en vergelijk of het overeenkomt."
+  "helpSafetyNumberBody": "Tik in een gesprek boven op de naam van je contact en kies \"Veiligheidsnummer\". Dat is een reeks cijfers die alleen klopt als jullie apps rechtstreeks met elkaar praten, zonder dat iemand ertussen zit. Spreek het samen af — bijvoorbeeld door het hardop voor te lezen — en vergelijk of het overeenkomt.",
+
+  "myNotesTitle": "Jezelf",
+  "myNotesSubtitle": "Versleutelde notities, alleen op dit toestel",
+  "clearMessagesMenuEntry": "Berichten wissen",
+  "myNotesClearConfirmTitle": "Berichten wissen?",
+  "myNotesClearConfirmMessage": "Dit verwijdert al je opgeslagen notities. Dit kan niet ongedaan gemaakt worden.",
+
+  "helpMyNotesTitle": "Notities aan jezelf",
+  "helpMyNotesBody": "Bovenaan je contactenlijst staat altijd \"Jezelf\" — een plekje om dingen voor jezelf op te slaan, zoals een notitieblok. Dit werkt ook zonder internet, en verlaat je toestel nooit."
 }

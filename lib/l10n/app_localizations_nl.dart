@@ -422,4 +422,27 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get helpSafetyNumberBody =>
       'Tik in een gesprek boven op de naam van je contact en kies \"Veiligheidsnummer\". Dat is een reeks cijfers die alleen klopt als jullie apps rechtstreeks met elkaar praten, zonder dat iemand ertussen zit. Spreek het samen af — bijvoorbeeld door het hardop voor te lezen — en vergelijk of het overeenkomt.';
+
+  @override
+  String get myNotesTitle => 'Jezelf';
+
+  @override
+  String get myNotesSubtitle => 'Versleutelde notities, alleen op dit toestel';
+
+  @override
+  String get clearMessagesMenuEntry => 'Berichten wissen';
+
+  @override
+  String get myNotesClearConfirmTitle => 'Berichten wissen?';
+
+  @override
+  String get myNotesClearConfirmMessage =>
+      'Dit verwijdert al je opgeslagen notities. Dit kan niet ongedaan gemaakt worden.';
+
+  @override
+  String get helpMyNotesTitle => 'Notities aan jezelf';
+
+  @override
+  String get helpMyNotesBody =>
+      'Bovenaan je contactenlijst staat altijd \"Jezelf\" — een plekje om dingen voor jezelf op te slaan, zoals een notitieblok. Dit werkt ook zonder internet, en verlaat je toestel nooit.';
 }

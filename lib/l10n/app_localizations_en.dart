@@ -419,4 +419,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpSafetyNumberBody =>
       'In a conversation, tap your contact\'s name at the top and choose \"Safety number\". That\'s a string of digits that only matches if your two apps are talking directly to each other, with no one in between. Agree on a way to compare it together — for example by reading it aloud — and check that it matches.';
+
+  @override
+  String get myNotesTitle => 'Yourself';
+
+  @override
+  String get myNotesSubtitle => 'Encrypted notes, kept only on this device';
+
+  @override
+  String get clearMessagesMenuEntry => 'Clear messages';
+
+  @override
+  String get myNotesClearConfirmTitle => 'Clear messages?';
+
+  @override
+  String get myNotesClearConfirmMessage =>
+      'This removes all your saved notes. This can\'t be undone.';
+
+  @override
+  String get helpMyNotesTitle => 'Notes to yourself';
+
+  @override
+  String get helpMyNotesBody =>
+      'At the top of your contacts list there\'s always \"Yourself\" — a spot to save things for yourself, like a notepad. It also works without internet, and never leaves your device.';
 }

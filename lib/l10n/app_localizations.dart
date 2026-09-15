@@ -817,6 +817,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In a conversation, tap your contact\'s name at the top and choose \"Safety number\". That\'s a string of digits that only matches if your two apps are talking directly to each other, with no one in between. Agree on a way to compare it together — for example by reading it aloud — and check that it matches.'**
   String get helpSafetyNumberBody;
+
+  /// No description provided for @myNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Yourself'**
+  String get myNotesTitle;
+
+  /// No description provided for @myNotesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted notes, kept only on this device'**
+  String get myNotesSubtitle;
+
+  /// No description provided for @clearMessagesMenuEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear messages'**
+  String get clearMessagesMenuEntry;
+
+  /// No description provided for @myNotesClearConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear messages?'**
+  String get myNotesClearConfirmTitle;
+
+  /// No description provided for @myNotesClearConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes all your saved notes. This can\'t be undone.'**
+  String get myNotesClearConfirmMessage;
+
+  /// No description provided for @helpMyNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes to yourself'**
+  String get helpMyNotesTitle;
+
+  /// No description provided for @helpMyNotesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'At the top of your contacts list there\'s always \"Yourself\" — a spot to save things for yourself, like a notepad. It also works without internet, and never leaves your device.'**
+  String get helpMyNotesBody;
 }
 
 class _AppLocalizationsDelegate

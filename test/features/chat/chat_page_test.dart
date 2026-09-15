@@ -332,5 +332,44 @@ void main() {
       final expected = await SafetyNumber.compute(myAccountId, contactId);
       expect(find.text(expected), findsOneWidget);
     });
+
+    testWidgets(
+        'a chat with yourself sends instantly offline, and its options '
+        'menu only offers to clear messages', (tester) async {
+      final store = InMemoryLocalStore();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        // Would throw on any real call — proves sending here never
+        // touches the network.
+        backend: UnreachableChatBackend(),
+        store: store,
+      );
+      final myAccountId = await me.accountId;
+
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+        sessionManager: me,
+        store: store,
+        contactAccountId: myAccountId,
+      )));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Jezelf'), findsOneWidget); // app bar title
+
+      await tester.enterText(find.byType(TextField), 'koop melk');
+      await tester.tap(find.byIcon(Icons.send));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('koop melk'), findsOneWidget);
+      expect(find.textContaining('Nog aan het verbinden'), findsNothing);
+
+      await tester.tap(find.text('Jezelf'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Berichten wissen'), findsOneWidget);
+      expect(find.text('Account ID bekijken'), findsNothing);
+      expect(find.text('Blokkeren'), findsNothing);
+    });
   });
 }

@@ -27,6 +27,7 @@ class _ChatPageState extends State<ChatPage> {
   List<MessageRecord> _messages = [];
   String? _displayName;
   ContactStatus _status = ContactStatus.accepted;
+  bool _isSelfChat = false;
   final _controller = TextEditingController();
   Timer? _pollTimer;
   bool _sending = false;
@@ -36,11 +37,18 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _refresh();
     _loadContact();
+    _checkSelfChat();
     // No WebSocket/push infra on the current (plain PHP shared) hosting, so
     // this is as close to real-time as polling gets without hammering the
     // server — fast enough to feel snappy while a conversation is open.
     _pollTimer =
         Timer.periodic(const Duration(milliseconds: 1500), (_) => _poll());
+  }
+
+  Future<void> _checkSelfChat() async {
+    final myAccountId = await widget.sessionManager.accountId;
+    if (!mounted) return;
+    setState(() => _isSelfChat = widget.contactAccountId == myAccountId);
   }
 
   Future<void> _loadContact() async {
@@ -60,6 +68,10 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _poll() async {
+    // Notes to yourself never touch the network — nothing is ever posted
+    // for them, so there's nothing to poll for either.
+    if (_isSelfChat) return;
+
     // Always refresh from the local store after polling — don't rely on
     // *this* poll call's own return value to decide whether to refresh.
     // ContactsPage keeps polling in the background too (it isn't disposed
@@ -96,7 +108,14 @@ class _ChatPageState extends State<ChatPage> {
       // launch, and failing this silently-but-instantly with a raw
       // "not authenticated yet" exception was confusing — this shows a
       // plain-language reason instead and leaves the typed text in place.
-      if (!await widget.sessionManager.ensureBootstrapped()) {
+      // Notes to yourself skip this entirely — SessionManager.sendMessage
+      // never touches the network for them, so there's nothing to wait
+      // on. Checked fresh here rather than via the _isSelfChat field:
+      // that's set asynchronously in initState() and might not have
+      // resolved yet if you send a note the instant the chat opens.
+      final isSelfChat =
+          widget.contactAccountId == await widget.sessionManager.accountId;
+      if (!isSelfChat && !await widget.sessionManager.ensureBootstrapped()) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -262,8 +281,61 @@ class _ChatPageState extends State<ChatPage> {
     Navigator.of(context).pop();
   }
 
+  Future<void> _confirmClearMessages() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.myNotesClearConfirmTitle),
+        content: Text(l10n.myNotesClearConfirmMessage),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await widget.store.deleteMessagesWith(widget.contactAccountId);
+    await _refresh();
+  }
+
   void _showContactOptions() {
     final l10n = AppLocalizations.of(context)!;
+
+    if (_isSelfChat) {
+      // No account-id/rename/block for a chat with yourself — none of
+      // that is meaningful here, so this menu only offers to clear it.
+      showModalBottomSheet<void>(
+        context: context,
+        builder: (sheetContext) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error),
+                title: Text(l10n.clearMessagesMenuEntry,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _confirmClearMessages();
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet<void>(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -337,7 +409,9 @@ class _ChatPageState extends State<ChatPage> {
       appBar: AppBar(
         title: InkWell(
           onTap: _showContactOptions,
-          child: Text(_displayName ?? _shorten(widget.contactAccountId)),
+          child: Text(_isSelfChat
+              ? l10n.myNotesTitle
+              : _displayName ?? _shorten(widget.contactAccountId)),
         ),
       ),
       body: Column(

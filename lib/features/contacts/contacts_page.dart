@@ -296,30 +296,49 @@ class _ContactsPageState extends State<ContactsPage> {
           ),
         ],
       ),
-      body: _contacts.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(l10n.noContactsYet, textAlign: TextAlign.center),
-              ),
+      body: ListView(
+        children: [
+          _myNotesTile(l10n),
+          const Divider(),
+          if (requests.isEmpty && accepted.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(l10n.noContactsYet, textAlign: TextAlign.center),
             )
-          : ListView(
-              children: [
-                if (requests.isNotEmpty) ...[
-                  _SectionHeader(l10n.messageRequests),
-                  for (final contact in requests) _contactTile(contact, l10n),
-                  const Divider(),
-                ],
-                if (requests.isNotEmpty && accepted.isNotEmpty)
-                  _SectionHeader(l10n.contactsSectionTitle),
-                for (final contact in accepted) _contactTile(contact, l10n),
-              ],
-            ),
+          else ...[
+            if (requests.isNotEmpty) ...[
+              _SectionHeader(l10n.messageRequests),
+              for (final contact in requests) _contactTile(contact, l10n),
+              const Divider(),
+            ],
+            if (requests.isNotEmpty && accepted.isNotEmpty)
+              _SectionHeader(l10n.contactsSectionTitle),
+            for (final contact in accepted) _contactTile(contact, l10n),
+          ],
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddContactDialog,
         tooltip: l10n.addContact,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  /// Pinned above the regular contacts list, always present: a chat with
+  /// yourself, for notes that never leave the device. Deliberately not
+  /// backed by a [ContactRecord] (not stored via [LocalStore.upsertContact])
+  /// so it can't be swiped away and doesn't affect the empty-state or
+  /// message-request/contact grouping above.
+  Widget _myNotesTile(AppLocalizations l10n) {
+    return ListTile(
+      leading: const CircleAvatar(child: Icon(Icons.sticky_note_2_outlined)),
+      title: Text(l10n.myNotesTitle),
+      subtitle: Text(l10n.myNotesSubtitle),
+      onTap: () {
+        final id = _myAccountId;
+        if (id != null) _openChat(id);
+      },
     );
   }
 

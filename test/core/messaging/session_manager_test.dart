@@ -274,5 +274,28 @@ void main() {
             (e) => e.message, 'message', contains('not connected yet'))),
       );
     });
+
+    test(
+        'sendMessage to your own account id saves a note locally without '
+        'ever touching the network', () async {
+      final store = InMemoryLocalStore();
+      final alice = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        // Would throw on any real call — proves this path never reaches
+        // X3DH/the backend at all, not just that it happens to succeed.
+        backend: UnreachableChatBackend(),
+        store: store,
+      );
+      final myId = await alice.accountId;
+
+      await alice.sendMessage(myId, 'koop melk');
+      await alice.sendMessage(myId, 'bel de tandarts');
+
+      final notes = await store.messagesWith(myId);
+      expect(notes.map((m) => m.body), ['koop melk', 'bel de tandarts']);
+      expect(notes.every((m) => m.direction == 'out'), isTrue);
+      // No session was created for it — confirms nothing X3DH-related ran.
+      expect(await store.loadSession(myId), isNull);
+    });
   });
 }

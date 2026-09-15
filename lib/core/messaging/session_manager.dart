@@ -128,6 +128,21 @@ class SessionManager {
   }
 
   Future<void> sendMessage(String contactAccountId, String text) async {
+    final myAccountId = await accountId;
+
+    if (contactAccountId == myAccountId) {
+      // Notes to yourself: there's no second party to establish a session
+      // with, and this session's own sending chain can't turn around and
+      // decrypt a message sent right back to itself (the Double Ratchet's
+      // sending and receiving chains are only symmetric between two
+      // *different* parties) — so this skips X3DH/the ratchet/the server
+      // entirely and is just saved straight to the local (already
+      // encrypted-at-rest) store. Works fully offline, on purpose.
+      await _store.saveMessage(
+          contactId: contactAccountId, direction: 'out', body: text);
+      return;
+    }
+
     // A defense-in-depth check, not the primary UX for this: callers (e.g.
     // ChatPage) should already call ensureBootstrapped() themselves first
     // and show a friendly "still connecting" message rather than ever
@@ -137,7 +152,6 @@ class SessionManager {
     if (!await ensureBootstrapped()) {
       throw StateError('not connected yet — try again once connected');
     }
-    final myAccountId = await accountId;
     var session = await _store.loadSession(contactAccountId);
     final plaintext = utf8.encode(text);
     final associatedData = await _associatedData(myAccountId, contactAccountId);

@@ -10,6 +10,7 @@ class HelpPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final topics = <_HelpTopic>[
       _HelpTopic(l10n.helpIntroTitle, l10n.helpIntroBody),
+      _HelpTopic(l10n.helpMyNotesTitle, l10n.helpMyNotesBody),
       _HelpTopic(l10n.helpAccountIdTitle, l10n.helpAccountIdBody),
       _HelpTopic(l10n.helpAddContactTitle, l10n.helpAddContactBody),
       _HelpTopic(l10n.helpQrTitle, l10n.helpQrBody),

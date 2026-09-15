@@ -183,5 +183,14 @@
   "helpQrBody": "In \"Add contact\", you can tap the scan icon to scan someone's QR code instead of typing out their Account ID. It also works the other way round: have someone scan your Account ID screen (tap the badge icon in the top right) to add you.",
 
   "helpSafetyNumberTitle": "Making sure you're talking to the right person",
-  "helpSafetyNumberBody": "In a conversation, tap your contact's name at the top and choose \"Safety number\". That's a string of digits that only matches if your two apps are talking directly to each other, with no one in between. Agree on a way to compare it together — for example by reading it aloud — and check that it matches."
+  "helpSafetyNumberBody": "In a conversation, tap your contact's name at the top and choose \"Safety number\". That's a string of digits that only matches if your two apps are talking directly to each other, with no one in between. Agree on a way to compare it together — for example by reading it aloud — and check that it matches.",
+
+  "myNotesTitle": "Yourself",
+  "myNotesSubtitle": "Encrypted notes, kept only on this device",
+  "clearMessagesMenuEntry": "Clear messages",
+  "myNotesClearConfirmTitle": "Clear messages?",
+  "myNotesClearConfirmMessage": "This removes all your saved notes. This can't be undone.",
+
+  "helpMyNotesTitle": "Notes to yourself",
+  "helpMyNotesBody": "At the top of your contacts list there's always \"Yourself\" — a spot to save things for yourself, like a notepad. It also works without internet, and never leaves your device."
 }
