@@ -44,7 +44,7 @@ class AppDatabase {
     final db = await openDatabase(
       dbPath,
       password: passphrase,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE contacts (
@@ -87,6 +87,7 @@ class AppDatabase {
             used INTEGER NOT NULL DEFAULT 0
           )
         ''');
+        await _createGroupTables(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -95,6 +96,9 @@ class AppDatabase {
           // — 'accepted' is the correct default for all of them.
           await db.execute(
               "ALTER TABLE contacts ADD COLUMN status TEXT NOT NULL DEFAULT 'accepted'");
+        }
+        if (oldVersion < 3) {
+          await _createGroupTables(db);
         }
       },
     );
@@ -106,5 +110,24 @@ class AppDatabase {
     final random = Random.secure();
     final bytes = List<int>.generate(32, (_) => random.nextInt(256));
     return base64UrlEncode(bytes);
+  }
+
+  static Future<void> _createGroupTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE groups (
+        group_id TEXT PRIMARY KEY,
+        display_name TEXT,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE group_members (
+        group_id TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        PRIMARY KEY (group_id, account_id)
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_group_members_group ON group_members(group_id)');
   }
 }

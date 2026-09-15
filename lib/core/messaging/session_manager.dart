@@ -10,6 +10,7 @@ import '../crypto/identity_key_pair.dart';
 import '../crypto/prekey_bundle.dart';
 import '../crypto/x3dh.dart';
 import '../storage/local_store.dart';
+import 'message_payload.dart';
 import 'wire_format.dart';
 
 /// Orchestrates everything needed for a working, persisted, end-to-end
@@ -152,15 +153,128 @@ class SessionManager {
     if (!await ensureBootstrapped()) {
       throw StateError('not connected yet — try again once connected');
     }
-    var session = await _store.loadSession(contactAccountId);
-    final plaintext = utf8.encode(text);
-    final associatedData = await _associatedData(myAccountId, contactAccountId);
+
+    await _encryptAndSendToRecipient(
+      myAccountId: myAccountId,
+      recipientAccountId: contactAccountId,
+      plaintext: MessagePayload(body: text).encode(),
+    );
+    await _store.upsertContact(contactAccountId);
+    await _store.saveMessage(
+        contactId: contactAccountId, direction: 'out', body: text);
+  }
+
+  /// Sends [text] to every member of [groupId] (except yourself) as an
+  /// individually end-to-end encrypted copy over each member's own 1:1
+  /// session — groups deliberately don't use a shared "sender key" scheme;
+  /// see [MessagePayload]'s doc comment for why. One member failing to
+  /// receive it (e.g. their prekey bundle can't be fetched right now)
+  /// doesn't stop delivery to the others; failures are collected and
+  /// reported together once every member has been tried.
+  Future<void> sendGroupMessage(
+    String groupId,
+    List<String> memberAccountIds,
+    String text,
+  ) async {
+    if (!await ensureBootstrapped()) {
+      throw StateError('not connected yet — try again once connected');
+    }
+    final myAccountId = await accountId;
+    final plaintext = MessagePayload(body: text, groupId: groupId).encode();
+
+    final failures = <String, Object>{};
+    for (final memberId in memberAccountIds) {
+      if (memberId == myAccountId) continue;
+      try {
+        await _encryptAndSendToRecipient(
+          myAccountId: myAccountId,
+          recipientAccountId: memberId,
+          plaintext: plaintext,
+        );
+      } catch (e) {
+        failures[memberId] = e;
+      }
+    }
+
+    await _store.saveMessage(contactId: groupId, direction: 'out', body: text);
+
+    if (failures.isNotEmpty) {
+      throw StateError(
+          'failed to deliver to ${failures.length} member(s): ${failures.keys.join(', ')}');
+    }
+  }
+
+  /// Registers a new group with the server (bookkeeping only — see
+  /// [ChatBackend.createGroup]). Does not touch local storage; the caller
+  /// is expected to save the [GroupRecord] itself once this succeeds, the
+  /// same way adding a 1:1 contact works.
+  Future<void> createGroup(
+      String groupId, List<String> otherMemberAccountIds) async {
+    if (!await ensureBootstrapped()) {
+      throw StateError('not connected yet — try again once connected');
+    }
+    await _backend.createGroup(groupId, otherMemberAccountIds);
+  }
+
+  Future<void> addGroupMember(String groupId, String accountId) async {
+    if (!await ensureBootstrapped()) {
+      throw StateError('not connected yet — try again once connected');
+    }
+    await _backend.addGroupMember(groupId, accountId);
+  }
+
+  /// Removes this device's own membership server-side. Doesn't touch local
+  /// storage — the caller deletes the local [GroupRecord] itself, same as
+  /// [createGroup]. Afterwards, [ChatBackend.fetchGroupMembers] for this
+  /// group id will 403 for this account (see GroupController::
+  /// assertIsMember server-side), which is exactly what makes any future
+  /// message still tagged with this group_id get refused by
+  /// [_handleIncomingGroupMessage] rather than silently reappearing.
+  Future<void> leaveGroup(String groupId) async {
+    if (!await ensureBootstrapped()) {
+      throw StateError('not connected yet — try again once connected');
+    }
+    await _backend.leaveGroup(groupId);
+  }
+
+  /// Test-only: sends a raw [MessagePayload] to [recipientAccountId] via
+  /// the same encryption path [sendMessage]/[sendGroupMessage] use,
+  /// without their higher-level bookkeeping — lets a test simulate a
+  /// sender lying about a message's group_id, to verify [pollAndDecrypt]
+  /// on the receiving end actually refuses to trust an unverified claim
+  /// like that. Doesn't expose any new capability an adversarial client
+  /// couldn't already reach by hand-crafting the (unencrypted, documented)
+  /// wire format itself — this is a convenience for testing that defense,
+  /// not a bypass of it.
+  @visibleForTesting
+  Future<void> debugSendRawPayload(
+      String recipientAccountId, MessagePayload payload) async {
+    final myAccountId = await accountId;
+    await _encryptAndSendToRecipient(
+      myAccountId: myAccountId,
+      recipientAccountId: recipientAccountId,
+      plaintext: payload.encode(),
+    );
+  }
+
+  /// The X3DH + Double Ratchet + wire-format machinery shared by 1:1 and
+  /// group sends: establishes a session with [recipientAccountId] if one
+  /// doesn't already exist, encrypts [plaintext], and posts it to their
+  /// mailbox.
+  Future<void> _encryptAndSendToRecipient({
+    required String myAccountId,
+    required String recipientAccountId,
+    required List<int> plaintext,
+  }) async {
+    var session = await _store.loadSession(recipientAccountId);
+    final associatedData =
+        await _associatedData(myAccountId, recipientAccountId);
 
     final List<int> wireBytes;
     final String envelopeType;
 
     if (session == null) {
-      final bundle = await _backend.fetchPrekeyBundle(contactAccountId);
+      final bundle = await _backend.fetchPrekeyBundle(recipientAccountId);
       final initiation =
           await X3dh.initiate(localIdentity: _identity, remoteBundle: bundle);
       session = await DoubleRatchetSession.initAsInitiator(
@@ -186,22 +300,20 @@ class SessionManager {
     }
 
     await _backend.postEnvelope(
-      recipientAccountId: contactAccountId,
+      recipientAccountId: recipientAccountId,
       envelopeType: envelopeType,
       ciphertext: wireBytes,
     );
-    await _store.saveSession(contactAccountId, session);
-    await _store.upsertContact(contactAccountId);
-    await _store.saveMessage(
-        contactId: contactAccountId, direction: 'out', body: text);
+    await _store.saveSession(recipientAccountId, session);
   }
 
   /// Polls the mailbox, decrypts everything it can, persists the results and
   /// acknowledges every processed envelope so the server can delete it.
-  /// Returns the contact ids that received a new message.
+  /// Returns the ids (contact or group) of every conversation that
+  /// received a new message.
   Future<Set<String>> pollAndDecrypt() async {
     final envelopes = await _backend.pollMailbox();
-    final updatedContacts = <String>{};
+    final updatedConversations = <String>{};
     final toAck = <int>[];
 
     for (final envelope in envelopes) {
@@ -209,21 +321,34 @@ class SessionManager {
         // Decrypting always happens, blocked or not — the Double Ratchet
         // chain must keep advancing on every message or a later, wanted
         // message from the same contact would fail to decrypt too.
-        final plaintext = await _decryptEnvelope(envelope);
-        final existing = await _store.getContact(envelope.senderAccountId);
+        final plaintextBytes = await _decryptEnvelope(envelope);
+        final payload = MessagePayload.decode(plaintextBytes);
 
-        if (existing?.status != ContactStatus.blocked) {
-          // New senders land as a pending message request, not silently
-          // added as a normal contact — upsertContact only applies this on
-          // first insert, so an already-accepted contact is left alone.
-          await _store.upsertContact(envelope.senderAccountId,
-              status: ContactStatus.pending);
-          await _store.saveMessage(
-            contactId: envelope.senderAccountId,
-            direction: 'in',
-            body: utf8.decode(plaintext),
+        if (payload.groupId != null) {
+          final delivered = await _handleIncomingGroupMessage(
+            groupId: payload.groupId!,
+            senderAccountId: envelope.senderAccountId,
+            body: payload.body,
           );
-          updatedContacts.add(envelope.senderAccountId);
+          if (delivered) {
+            updatedConversations.add(payload.groupId!);
+          }
+        } else {
+          final existing = await _store.getContact(envelope.senderAccountId);
+          if (existing?.status != ContactStatus.blocked) {
+            // New senders land as a pending message request, not silently
+            // added as a normal contact — upsertContact only applies this
+            // on first insert, so an already-accepted contact is left
+            // alone.
+            await _store.upsertContact(envelope.senderAccountId,
+                status: ContactStatus.pending);
+            await _store.saveMessage(
+              contactId: envelope.senderAccountId,
+              direction: 'in',
+              body: payload.body,
+            );
+            updatedConversations.add(envelope.senderAccountId);
+          }
         }
       } catch (e, stackTrace) {
         // Malformed, out-of-window or already-processed (duplicate
@@ -240,7 +365,48 @@ class SessionManager {
     }
 
     await _backend.ackEnvelopes(toAck);
-    return updatedContacts;
+    return updatedConversations;
+  }
+
+  /// Handles a decrypted group message. Returns whether it was actually
+  /// stored (false if the claimed sender turned out not to be a real
+  /// member of the group).
+  ///
+  /// The `group_id` tag comes from inside plaintext the *sender* chose —
+  /// their own honest 1:1 session with us happily encrypts whatever they
+  /// put in it, so nothing stops a contact from tagging an ordinary
+  /// message with a group_id for a group they aren't actually in, trying
+  /// to spoof a "group message". [ChatBackend.fetchGroupMembers] only ever
+  /// answers for a group *we* are actually a member of (see
+  /// GroupController::assertIsMember server-side), so treating its
+  /// response as the source of truth for membership — and refusing to
+  /// store the message at all if the claimed sender isn't in it — closes
+  /// that off.
+  Future<bool> _handleIncomingGroupMessage({
+    required String groupId,
+    required String senderAccountId,
+    required String body,
+  }) async {
+    final group = await _store.getGroup(groupId);
+    var members = group?.memberAccountIds;
+
+    if (members == null || !members.contains(senderAccountId)) {
+      try {
+        members = await _backend.fetchGroupMembers(groupId);
+      } catch (_) {
+        // Not a member (any more), or offline right now — can't verify
+        // this claim, so don't trust it.
+        return false;
+      }
+      await _store.upsertGroup(groupId, memberAccountIds: members);
+    }
+
+    if (!members.contains(senderAccountId)) {
+      return false;
+    }
+
+    await _store.saveMessage(contactId: groupId, direction: 'in', body: body);
+    return true;
   }
 
   Future<List<int>> _decryptEnvelope(MailboxEnvelope envelope) async {

@@ -445,4 +445,75 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get helpMyNotesBody =>
       'Bovenaan je contactenlijst staat altijd \"Jezelf\" — een plekje om dingen voor jezelf op te slaan, zoals een notitieblok. Dit werkt ook zonder internet, en verlaat je toestel nooit.';
+
+  @override
+  String get newContactMenuEntry => 'Nieuw contact';
+
+  @override
+  String get newGroupMenuEntry => 'Nieuwe groep';
+
+  @override
+  String get createGroupTitle => 'Nieuwe groep aanmaken';
+
+  @override
+  String get groupNameHint => 'Groepsnaam (alleen op dit toestel zichtbaar)';
+
+  @override
+  String get selectMembersLabel => 'Kies leden';
+
+  @override
+  String get noAcceptedContactsForGroup =>
+      'Je hebt nog geen contacten om aan een groep toe te voegen. Voeg eerst iemand toe.';
+
+  @override
+  String get create => 'Aanmaken';
+
+  @override
+  String get groupsSectionTitle => 'Groepen';
+
+  @override
+  String memberCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count leden',
+      one: '1 lid',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupMembersTitle => 'Leden';
+
+  @override
+  String get youLabel => '(jij)';
+
+  @override
+  String get addMemberAction => 'Lid toevoegen';
+
+  @override
+  String get addMemberHint => 'Account ID van het nieuwe lid';
+
+  @override
+  String get renameGroupAction => 'Naam aanpassen';
+
+  @override
+  String get leaveGroupMenuEntry => 'Groep verlaten';
+
+  @override
+  String get leaveGroupConfirmTitle => 'Deze groep verlaten?';
+
+  @override
+  String get leaveGroupConfirmMessage =>
+      'Je ontvangt geen berichten meer van deze groep, en de groep + berichten worden van dit toestel verwijderd. Andere leden krijgen geen melding, maar kunnen wel zien dat je weg bent.';
+
+  @override
+  String get viewMembersMenuEntry => 'Leden bekijken';
+
+  @override
+  String get helpGroupsTitle => 'Groepschats';
+
+  @override
+  String get helpGroupsBody =>
+      'Tik op + en kies \"Nieuwe groep\" om een gesprek met meerdere mensen tegelijk te starten — kies een naam (alleen zichtbaar voor jou) en de contacten die mee moeten doen. Elk bericht wordt apart end-to-end versleuteld verstuurd naar elk lid, dus het duurt ietsjes langer bij grote groepen. Via de naam bovenin kun je leden bekijken/toevoegen, of de groep verlaten.';
 }

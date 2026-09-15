@@ -194,4 +194,31 @@ class HttpChatBackend implements ChatBackend {
     await _post('mailbox/ack', {'envelope_ids': envelopeIds},
         authenticated: true);
   }
+
+  @override
+  Future<void> createGroup(
+      String groupId, List<String> memberAccountIds) async {
+    await _post(
+      'groups',
+      {'group_id': groupId, 'member_account_ids': memberAccountIds},
+      authenticated: true,
+    );
+  }
+
+  @override
+  Future<void> addGroupMember(String groupId, String accountId) async {
+    await _post('groups/$groupId/members', {'account_id': accountId},
+        authenticated: true);
+  }
+
+  @override
+  Future<List<String>> fetchGroupMembers(String groupId) async {
+    final result = await _get('groups/$groupId', authenticated: true);
+    return (result['members'] as List<dynamic>).cast<String>();
+  }
+
+  @override
+  Future<void> leaveGroup(String groupId) async {
+    await _post('groups/$groupId/leave', {}, authenticated: true);
+  }
 }

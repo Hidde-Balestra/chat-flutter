@@ -51,4 +51,18 @@ abstract class ChatBackend {
   Future<List<MailboxEnvelope>> pollMailbox();
 
   Future<void> ackEnvelopes(List<int> envelopeIds);
+
+  /// Registers group membership with the server — bookkeeping only, so it
+  /// knows which mailboxes to expect fan-out to. [memberAccountIds] should
+  /// not include this device's own account id; the server adds the caller
+  /// as a member automatically.
+  Future<void> createGroup(String groupId, List<String> memberAccountIds);
+
+  Future<void> addGroupMember(String groupId, String accountId);
+
+  Future<List<String>> fetchGroupMembers(String groupId);
+
+  /// Removes this device's own account from the group — never another
+  /// member's.
+  Future<void> leaveGroup(String groupId);
 }

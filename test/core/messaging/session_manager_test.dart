@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:privacychat/core/crypto/identity_key_pair.dart';
+import 'package:privacychat/core/messaging/message_payload.dart';
 import 'package:privacychat/core/messaging/session_manager.dart';
 import 'package:privacychat/core/storage/local_store.dart';
 
@@ -296,6 +297,148 @@ void main() {
       expect(notes.every((m) => m.direction == 'out'), isTrue);
       // No session was created for it — confirms nothing X3DH-related ran.
       expect(await store.loadSession(myId), isNull);
+    });
+  });
+
+  group('SessionManager group messaging', () {
+    test(
+        'sendGroupMessage delivers an individually-encrypted copy to every '
+        'other member, and the sender never receives their own message back',
+        () async {
+      final server = FakeServer();
+      final aliceStore = InMemoryLocalStore();
+      final bobStore = InMemoryLocalStore();
+      final carolStore = InMemoryLocalStore();
+      final alice = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: aliceStore);
+      final bob = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: bobStore);
+      final carol = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: carolStore);
+      await alice.bootstrap();
+      await bob.bootstrap();
+      await carol.bootstrap();
+      final aliceId = await alice.accountId;
+      final bobId = await bob.accountId;
+      final carolId = await carol.accountId;
+
+      const groupId = 'group-1';
+      await alice.createGroup(groupId, [bobId, carolId]);
+      await aliceStore.upsertGroup(groupId,
+          displayName: 'Vrienden', memberAccountIds: [aliceId, bobId, carolId]);
+
+      await alice.sendGroupMessage(
+          groupId, [aliceId, bobId, carolId], 'hoi allemaal!');
+
+      // Shows up locally for Alice immediately, as her own sent copy.
+      expect((await aliceStore.messagesWith(groupId)).map((m) => m.body),
+          contains('hoi allemaal!'));
+
+      final bobUpdates = await bob.pollAndDecrypt();
+      final carolUpdates = await carol.pollAndDecrypt();
+
+      expect(bobUpdates, {groupId});
+      expect(carolUpdates, {groupId});
+      expect((await bobStore.messagesWith(groupId)).map((m) => m.body),
+          contains('hoi allemaal!'));
+      expect((await carolStore.messagesWith(groupId)).map((m) => m.body),
+          contains('hoi allemaal!'));
+
+      // Bob and Carol never had the group locally before — receiving the
+      // message is what taught them about it, including the *full*
+      // membership (not just who happened to message them).
+      final bobGroup = await bobStore.getGroup(groupId);
+      expect(bobGroup, isNotNull);
+      expect(
+          bobGroup!.memberAccountIds, containsAll([aliceId, bobId, carolId]));
+    });
+
+    test(
+        'pollAndDecrypt refuses to store a message claiming a group_id the '
+        'sender is not actually a member of', () async {
+      final server = FakeServer();
+      final bobStore = InMemoryLocalStore();
+      final alice = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: InMemoryLocalStore());
+      final bob = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: bobStore);
+      final carol = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: InMemoryLocalStore());
+      await alice.bootstrap();
+      await bob.bootstrap();
+      await carol.bootstrap();
+      final bobId = await bob.accountId;
+      final carolId = await carol.accountId;
+
+      // A real group that exists — but Alice was never added to it.
+      const groupId = 'group-real-but-alice-is-not-in-it';
+      await bob.createGroup(groupId, [carolId]);
+
+      // Alice (not a member) messages Bob directly, lying that it's a
+      // message for that group.
+      await alice.debugSendRawPayload(
+        bobId,
+        MessagePayload(body: 'ik zit toch ook in de groep!', groupId: groupId),
+      );
+
+      final updates = await bob.pollAndDecrypt();
+
+      expect(updates, isEmpty);
+      expect(await bobStore.messagesWith(groupId), isEmpty);
+      // Not silently reinterpreted as a normal 1:1 message either.
+      expect(await bobStore.messagesWith(await alice.accountId), isEmpty);
+    });
+
+    test(
+        'after leaveGroup, a later message still tagged with that group_id '
+        'is refused rather than silently reappearing', () async {
+      final server = FakeServer();
+      final bobStore = InMemoryLocalStore();
+      final alice = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: InMemoryLocalStore());
+      final bob = SessionManager(
+          identity: await IdentityKeyPair.generateRandom(),
+          backend: FakeChatBackend(server),
+          store: bobStore);
+      await alice.bootstrap();
+      await bob.bootstrap();
+      final aliceId = await alice.accountId;
+      final bobId = await bob.accountId;
+
+      const groupId = 'group-leave-test';
+      await alice.createGroup(groupId, [bobId]);
+      await alice.sendGroupMessage(groupId, [aliceId, bobId], 'welkom!');
+      expect(await bob.pollAndDecrypt(), {groupId});
+      expect((await bobStore.messagesWith(groupId)).map((m) => m.body),
+          contains('welkom!'));
+
+      await bob.leaveGroup(groupId);
+      await bobStore.deleteGroup(groupId); // what the UI does alongside it
+
+      // Alice doesn't know Bob left yet — her next message still targets
+      // him directly (that's how sendGroupMessage works: it just loops
+      // over whatever member list the caller gives it).
+      await alice.sendGroupMessage(groupId, [aliceId, bobId], 'nog iemand?');
+
+      final updates = await bob.pollAndDecrypt();
+
+      expect(updates, isEmpty);
+      expect(await bobStore.getGroup(groupId), isNull);
+      expect(await bobStore.messagesWith(groupId), isEmpty);
     });
   });
 }

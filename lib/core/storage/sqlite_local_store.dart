@@ -245,4 +245,89 @@ class SqliteLocalStore implements LocalStore {
         'SELECT COUNT(*) AS c FROM own_one_time_prekeys WHERE used = 0');
     return Sqflite.firstIntValue(result) ?? 0;
   }
+
+  @override
+  Future<void> upsertGroup(
+    String groupId, {
+    String? displayName,
+    required List<String> memberAccountIds,
+  }) async {
+    await _db.raw.transaction((txn) async {
+      final existing = await txn.query(
+        'groups',
+        where: 'group_id = ?',
+        whereArgs: [groupId],
+        limit: 1,
+      );
+      if (existing.isEmpty) {
+        await txn.insert('groups', {
+          'group_id': groupId,
+          'display_name': displayName,
+          'created_at': DateTime.now().millisecondsSinceEpoch,
+        });
+      } else if (displayName != null) {
+        await txn.update('groups', {'display_name': displayName},
+            where: 'group_id = ?', whereArgs: [groupId]);
+      }
+
+      await txn
+          .delete('group_members', where: 'group_id = ?', whereArgs: [groupId]);
+      final batch = txn.batch();
+      for (final accountId in memberAccountIds) {
+        batch.insert(
+            'group_members', {'group_id': groupId, 'account_id': accountId});
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  @override
+  Future<void> setGroupDisplayName(String groupId, String? displayName) async {
+    await _db.raw.update('groups', {'display_name': displayName},
+        where: 'group_id = ?', whereArgs: [groupId]);
+  }
+
+  @override
+  Future<GroupRecord?> getGroup(String groupId) async {
+    final rows = await _db.raw
+        .query('groups', where: 'group_id = ?', whereArgs: [groupId], limit: 1);
+    if (rows.isEmpty) {
+      return null;
+    }
+    final members = await _db.raw
+        .query('group_members', where: 'group_id = ?', whereArgs: [groupId]);
+    return GroupRecord(
+      groupId: rows.first['group_id'] as String,
+      displayName: rows.first['display_name'] as String?,
+      memberAccountIds:
+          members.map((row) => row['account_id'] as String).toList(),
+    );
+  }
+
+  @override
+  Future<List<GroupRecord>> listGroups() async {
+    final rows = await _db.raw.query('groups', orderBy: 'created_at DESC');
+    final groups = <GroupRecord>[];
+    for (final row in rows) {
+      final groupId = row['group_id'] as String;
+      final members = await _db.raw
+          .query('group_members', where: 'group_id = ?', whereArgs: [groupId]);
+      groups.add(GroupRecord(
+        groupId: groupId,
+        displayName: row['display_name'] as String?,
+        memberAccountIds:
+            members.map((m) => m['account_id'] as String).toList(),
+      ));
+    }
+    return groups;
+  }
+
+  @override
+  Future<void> deleteGroup(String groupId) async {
+    await _db.raw.delete('groups', where: 'group_id = ?', whereArgs: [groupId]);
+    await _db.raw
+        .delete('group_members', where: 'group_id = ?', whereArgs: [groupId]);
+    await _db.raw
+        .delete('messages', where: 'contact_id = ?', whereArgs: [groupId]);
+  }
 }

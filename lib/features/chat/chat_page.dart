@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/messaging/session_manager.dart';
 import '../../core/storage/local_store.dart';
 import '../../l10n/app_localizations.dart';
+import '../shared/message_bubble.dart';
 import 'safety_number_page.dart';
 
 class ChatPage extends StatefulWidget {
@@ -427,7 +428,7 @@ class _ChatPageState extends State<ChatPage> {
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final message = _messages[_messages.length - 1 - index];
-                      return _MessageBubble(message: message);
+                      return MessageBubble(message: message);
                     },
                   ),
           ),
@@ -533,33 +534,4 @@ class _ChatPageState extends State<ChatPage> {
   String _shorten(String accountId) => accountId.length > 16
       ? '${accountId.substring(0, 8)}…${accountId.substring(accountId.length - 6)}'
       : accountId;
-}
-
-class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
-
-  final MessageRecord message;
-
-  @override
-  Widget build(BuildContext context) {
-    final isMine = message.direction == 'out';
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Align(
-      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints:
-            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: isMine
-              ? colorScheme.primaryContainer
-              : colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(message.body),
-      ),
-    );
-  }
 }

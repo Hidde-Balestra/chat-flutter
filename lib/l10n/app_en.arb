@@ -192,5 +192,32 @@
   "myNotesClearConfirmMessage": "This removes all your saved notes. This can't be undone.",
 
   "helpMyNotesTitle": "Notes to yourself",
-  "helpMyNotesBody": "At the top of your contacts list there's always \"Yourself\" — a spot to save things for yourself, like a notepad. It also works without internet, and never leaves your device."
+  "helpMyNotesBody": "At the top of your contacts list there's always \"Yourself\" — a spot to save things for yourself, like a notepad. It also works without internet, and never leaves your device.",
+
+  "newContactMenuEntry": "New contact",
+  "newGroupMenuEntry": "New group",
+  "createGroupTitle": "Create a new group",
+  "groupNameHint": "Group name (only visible on this device)",
+  "selectMembersLabel": "Choose members",
+  "noAcceptedContactsForGroup": "You don't have any contacts to add to a group yet. Add someone first.",
+  "create": "Create",
+  "groupsSectionTitle": "Groups",
+  "memberCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@memberCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "groupMembersTitle": "Members",
+  "youLabel": "(you)",
+  "addMemberAction": "Add member",
+  "addMemberHint": "New member's Account ID",
+  "renameGroupAction": "Edit name",
+  "leaveGroupMenuEntry": "Leave group",
+  "leaveGroupConfirmTitle": "Leave this group?",
+  "leaveGroupConfirmMessage": "You'll stop receiving messages from this group, and it (plus its messages) will be removed from this device. Other members aren't notified, but can see that you've left.",
+  "viewMembersMenuEntry": "View members",
+
+  "helpGroupsTitle": "Group chats",
+  "helpGroupsBody": "Tap + and choose \"New group\" to start a conversation with several people at once — pick a name (only visible to you) and the contacts to include. Every message is individually end-to-end encrypted and sent to each member separately, so it takes a little longer for large groups. Tap the name at the top to view/add members, or to leave the group."
 }

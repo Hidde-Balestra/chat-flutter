@@ -7,6 +7,7 @@ import 'package:privacychat/core/settings/locale_controller.dart';
 import 'package:privacychat/core/storage/local_store.dart';
 import 'package:privacychat/features/chat/chat_page.dart';
 import 'package:privacychat/features/contacts/contacts_page.dart';
+import 'package:privacychat/features/groups/group_chat_page.dart';
 import 'package:privacychat/features/shared/identicon.dart';
 import 'package:privacychat/features/shared/qr_code_box.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,6 +62,8 @@ void main() {
       expect(find.textContaining('Nog geen contacten'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Nieuw contact'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, contactId);
@@ -265,6 +268,8 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Nieuw contact'));
+      await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.qr_code_scanner), findsOneWidget);
     });
@@ -304,6 +309,67 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('test notitie'), findsOneWidget);
+    });
+
+    testWidgets(
+        'creates a group from selected contacts and delivers a message to '
+        'its members', (tester) async {
+      final server = FakeServer();
+      final store = InMemoryLocalStore();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: store,
+      );
+      final bobStore = InMemoryLocalStore();
+      final bob = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: bobStore,
+      );
+      await me.bootstrap();
+      await bob.bootstrap();
+      final bobId = await bob.accountId;
+      await store.upsertContact(bobId, displayName: 'Bob');
+
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: store,
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
+      await tester.pump();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Nieuwe groep'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Testgroep');
+      await tester.tap(find.text('Bob').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aanmaken'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GroupChatPage), findsOneWidget);
+      expect(find.text('Testgroep'), findsWidgets); // app bar title too
+
+      await tester.enterText(find.byType(TextField), 'hoi groep!');
+      await tester.tap(find.byIcon(Icons.send));
+      await tester.pumpAndSettle();
+
+      expect(find.text('hoi groep!'), findsOneWidget);
+
+      final groups = await store.listGroups();
+      expect(groups, hasLength(1));
+      expect(groups.first.memberAccountIds, containsAll([bobId]));
+
+      final bobUpdates = await bob.pollAndDecrypt();
+      expect(bobUpdates, {groups.first.groupId});
+      expect(
+        (await bobStore.messagesWith(groups.first.groupId)).map((m) => m.body),
+        contains('hoi groep!'),
+      );
     });
   });
 }

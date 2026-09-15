@@ -442,4 +442,75 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpMyNotesBody =>
       'At the top of your contacts list there\'s always \"Yourself\" — a spot to save things for yourself, like a notepad. It also works without internet, and never leaves your device.';
+
+  @override
+  String get newContactMenuEntry => 'New contact';
+
+  @override
+  String get newGroupMenuEntry => 'New group';
+
+  @override
+  String get createGroupTitle => 'Create a new group';
+
+  @override
+  String get groupNameHint => 'Group name (only visible on this device)';
+
+  @override
+  String get selectMembersLabel => 'Choose members';
+
+  @override
+  String get noAcceptedContactsForGroup =>
+      'You don\'t have any contacts to add to a group yet. Add someone first.';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get groupsSectionTitle => 'Groups';
+
+  @override
+  String memberCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupMembersTitle => 'Members';
+
+  @override
+  String get youLabel => '(you)';
+
+  @override
+  String get addMemberAction => 'Add member';
+
+  @override
+  String get addMemberHint => 'New member\'s Account ID';
+
+  @override
+  String get renameGroupAction => 'Edit name';
+
+  @override
+  String get leaveGroupMenuEntry => 'Leave group';
+
+  @override
+  String get leaveGroupConfirmTitle => 'Leave this group?';
+
+  @override
+  String get leaveGroupConfirmMessage =>
+      'You\'ll stop receiving messages from this group, and it (plus its messages) will be removed from this device. Other members aren\'t notified, but can see that you\'ve left.';
+
+  @override
+  String get viewMembersMenuEntry => 'View members';
+
+  @override
+  String get helpGroupsTitle => 'Group chats';
+
+  @override
+  String get helpGroupsBody =>
+      'Tap + and choose \"New group\" to start a conversation with several people at once — pick a name (only visible to you) and the contacts to include. Every message is individually end-to-end encrypted and sent to each member separately, so it takes a little longer for large groups. Tap the name at the top to view/add members, or to leave the group.';
 }

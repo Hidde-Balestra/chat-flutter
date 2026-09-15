@@ -34,6 +34,23 @@ class ContactRecord {
   final ContactStatus status;
 }
 
+class GroupRecord {
+  GroupRecord({
+    required this.groupId,
+    this.displayName,
+    required this.memberAccountIds,
+  });
+
+  final String groupId;
+
+  /// Purely local, same as [ContactRecord.displayName] — never sent to the
+  /// server or to other members.
+  final String? displayName;
+
+  /// Includes this device's own account id.
+  final List<String> memberAccountIds;
+}
+
 class MessageRecord {
   MessageRecord({
     required this.id,
@@ -119,4 +136,27 @@ abstract class LocalStore {
   Future<OneTimePreKey?> takeOneTimePreKeyById(int id);
 
   Future<int> countUnusedOneTimePreKeys();
+
+  /// Creates or updates a group's local record (name + membership). Reuses
+  /// the same [saveMessage]/[messagesWith]/[deleteMessagesWith] as a 1:1
+  /// conversation, keyed by [groupId] the same way a contact's account id
+  /// is — a "conversation" is just an opaque string key either way.
+  Future<void> upsertGroup(
+    String groupId, {
+    String? displayName,
+    required List<String> memberAccountIds,
+  });
+
+  Future<void> setGroupDisplayName(String groupId, String? displayName);
+
+  Future<GroupRecord?> getGroup(String groupId);
+
+  Future<List<GroupRecord>> listGroups();
+
+  /// Removes the group's local record and message history from this
+  /// device only — purely local bookkeeping cleanup. To actually leave a
+  /// group (remove your server-side membership too, so it stops being
+  /// addressable to you), call [SessionManager.leaveGroup] as well; the UI
+  /// does both together.
+  Future<void> deleteGroup(String groupId);
 }

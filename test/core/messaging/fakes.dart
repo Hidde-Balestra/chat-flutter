@@ -57,6 +57,7 @@ class FakeServer {
   // ignore: library_private_types_in_public_api
   final List<_StoredEnvelope> mailbox = [];
   final Map<String, List<int>> pendingChallenges = {};
+  final Map<String, Set<String>> groups = {};
   int _nextEnvelopeId = 1;
 }
 
@@ -204,6 +205,51 @@ class FakeChatBackend implements ChatBackend {
     _server.mailbox
         .removeWhere((envelope) => envelopeIds.contains(envelope.id));
   }
+
+  @override
+  Future<void> createGroup(
+      String groupId, List<String> memberAccountIds) async {
+    final creator = _authenticated;
+    if (_server.groups.containsKey(groupId)) {
+      throw StateError('group_id already exists');
+    }
+    final all = {creator, ...memberAccountIds};
+    for (final id in all) {
+      if (!_server.accounts.containsKey(id)) {
+        throw StateError('unknown member account_id: $id');
+      }
+    }
+    _server.groups[groupId] = all;
+  }
+
+  @override
+  Future<void> addGroupMember(String groupId, String accountId) async {
+    final requester = _authenticated;
+    final members = _server.groups[groupId];
+    if (members == null || !members.contains(requester)) {
+      throw StateError('not a member of this group');
+    }
+    if (!_server.accounts.containsKey(accountId)) {
+      throw StateError('unknown account_id');
+    }
+    members.add(accountId);
+  }
+
+  @override
+  Future<List<String>> fetchGroupMembers(String groupId) async {
+    final requester = _authenticated;
+    final members = _server.groups[groupId];
+    if (members == null || !members.contains(requester)) {
+      throw StateError('not a member of this group');
+    }
+    return members.toList();
+  }
+
+  @override
+  Future<void> leaveGroup(String groupId) async {
+    final requester = _authenticated;
+    _server.groups[groupId]?.remove(requester);
+  }
 }
 
 /// A [ChatBackend] that can never reach the network — every call throws,
@@ -249,6 +295,21 @@ class UnreachableChatBackend implements ChatBackend {
   @override
   Future<void> ackEnvelopes(List<int> envelopeIds) =>
       throw UnimplementedError();
+
+  @override
+  Future<void> createGroup(String groupId, List<String> memberAccountIds) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> addGroupMember(String groupId, String accountId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<String>> fetchGroupMembers(String groupId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> leaveGroup(String groupId) => throw UnimplementedError();
 }
 
 class InMemoryLocalStore implements LocalStore {
@@ -369,4 +430,43 @@ class InMemoryLocalStore implements LocalStore {
 
   @override
   Future<int> countUnusedOneTimePreKeys() async => _oneTimePreKeys.length;
+
+  final Map<String, GroupRecord> _groups = {};
+
+  @override
+  Future<void> upsertGroup(
+    String groupId, {
+    String? displayName,
+    required List<String> memberAccountIds,
+  }) async {
+    final existing = _groups[groupId];
+    _groups[groupId] = GroupRecord(
+      groupId: groupId,
+      displayName: displayName ?? existing?.displayName,
+      memberAccountIds: memberAccountIds,
+    );
+  }
+
+  @override
+  Future<void> setGroupDisplayName(String groupId, String? displayName) async {
+    final existing = _groups[groupId];
+    if (existing == null) return;
+    _groups[groupId] = GroupRecord(
+      groupId: groupId,
+      displayName: displayName,
+      memberAccountIds: existing.memberAccountIds,
+    );
+  }
+
+  @override
+  Future<GroupRecord?> getGroup(String groupId) async => _groups[groupId];
+
+  @override
+  Future<List<GroupRecord>> listGroups() async => _groups.values.toList();
+
+  @override
+  Future<void> deleteGroup(String groupId) async {
+    _groups.remove(groupId);
+    _messages.removeWhere((message) => message.contactId == groupId);
+  }
 }

@@ -10,7 +10,9 @@ import '../../core/settings/locale_controller.dart';
 import '../../core/storage/local_store.dart';
 import '../../l10n/app_localizations.dart';
 import '../chat/chat_page.dart';
+import '../groups/group_chat_page.dart';
 import '../settings/settings_page.dart';
+import '../shared/hex_id.dart';
 import '../shared/identicon.dart';
 import '../shared/qr_code_box.dart';
 import '../shared/qr_scan_page.dart';
@@ -46,6 +48,7 @@ class ContactsPage extends StatefulWidget {
 
 class _ContactsPageState extends State<ContactsPage> {
   List<ContactRecord> _contacts = [];
+  List<GroupRecord> _groups = [];
   Timer? _pollTimer;
   String? _myAccountId;
 
@@ -67,6 +70,7 @@ class _ContactsPageState extends State<ContactsPage> {
     if (!mounted) return;
     setState(() => _myAccountId = id);
     await _refreshContacts();
+    await _refreshGroups();
     await _poll();
   }
 
@@ -83,12 +87,148 @@ class _ContactsPageState extends State<ContactsPage> {
       // transient network error — just retry on the next tick
     }
     await _refreshContacts();
+    await _refreshGroups();
   }
 
   Future<void> _refreshContacts() async {
     final contacts = await widget.store.listContacts();
     if (!mounted) return;
     setState(() => _contacts = contacts);
+  }
+
+  Future<void> _refreshGroups() async {
+    final groups = await widget.store.listGroups();
+    if (!mounted) return;
+    setState(() => _groups = groups);
+  }
+
+  void _showAddMenu() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person_add_alt_outlined),
+              title: Text(l10n.newContactMenuEntry),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _showAddContactDialog();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group_add_outlined),
+              title: Text(l10n.newGroupMenuEntry),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _showCreateGroupDialog();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCreateGroupDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final accepted =
+        _contacts.where((c) => c.status == ContactStatus.accepted).toList();
+
+    if (accepted.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.noAcceptedContactsForGroup)),
+      );
+      return;
+    }
+
+    final nameController = TextEditingController();
+    final selected = <String>{};
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(l10n.createGroupTitle),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: l10n.groupNameHint),
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.selectMembersLabel,
+                      style: Theme.of(context).textTheme.labelLarge),
+                ),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final contact in accepted)
+                        CheckboxListTile(
+                          value: selected.contains(contact.accountId),
+                          title: Text(contact.displayName ??
+                              _shorten(contact.accountId)),
+                          onChanged: (checked) => setDialogState(() {
+                            if (checked ?? false) {
+                              selected.add(contact.accountId);
+                            } else {
+                              selected.remove(contact.accountId);
+                            }
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.cancel)),
+            FilledButton(
+              onPressed:
+                  selected.isEmpty ? null : () => Navigator.pop(context, true),
+              child: Text(l10n.create),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result != true) return;
+
+    final groupId = randomHexId();
+    final name = nameController.text.trim();
+    try {
+      await widget.sessionManager.createGroup(groupId, selected.toList());
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.sendFailed(e.toString()))),
+        );
+      }
+      return;
+    }
+
+    final members = {...selected, if (_myAccountId != null) _myAccountId!};
+    await widget.store.upsertGroup(
+      groupId,
+      displayName: name.isEmpty ? null : name,
+      memberAccountIds: members.toList(),
+    );
+    await _refreshGroups();
+    if (!mounted) return;
+    _openGroupChat(groupId);
   }
 
   Future<void> _showAddContactDialog() async {
@@ -233,6 +373,18 @@ class _ContactsPageState extends State<ContactsPage> {
         .then((_) => _refreshContacts());
   }
 
+  void _openGroupChat(String groupId) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+          builder: (context) => GroupChatPage(
+            sessionManager: widget.sessionManager,
+            store: widget.store,
+            groupId: groupId,
+          ),
+        ))
+        .then((_) => _refreshGroups());
+  }
+
   void _showMyAccountId() {
     final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
@@ -300,7 +452,7 @@ class _ContactsPageState extends State<ContactsPage> {
         children: [
           _myNotesTile(l10n),
           const Divider(),
-          if (requests.isEmpty && accepted.isEmpty)
+          if (requests.isEmpty && accepted.isEmpty && _groups.isEmpty)
             Padding(
               padding: const EdgeInsets.all(24),
               child: Text(l10n.noContactsYet, textAlign: TextAlign.center),
@@ -314,11 +466,16 @@ class _ContactsPageState extends State<ContactsPage> {
             if (requests.isNotEmpty && accepted.isNotEmpty)
               _SectionHeader(l10n.contactsSectionTitle),
             for (final contact in accepted) _contactTile(contact, l10n),
+            if (_groups.isNotEmpty) ...[
+              const Divider(),
+              _SectionHeader(l10n.groupsSectionTitle),
+              for (final group in _groups) _groupTile(group),
+            ],
           ],
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddContactDialog,
+        onPressed: _showAddMenu,
         tooltip: l10n.addContact,
         child: const Icon(Icons.add),
       ),
@@ -368,6 +525,16 @@ class _ContactsPageState extends State<ContactsPage> {
         onTap: () => _openChat(contact.accountId),
         onLongPress: () => _showRenameDialog(contact),
       ),
+    );
+  }
+
+  Widget _groupTile(GroupRecord group) {
+    final l10n = AppLocalizations.of(context)!;
+    return ListTile(
+      leading: const CircleAvatar(child: Icon(Icons.groups_outlined)),
+      title: Text(group.displayName ?? _shorten(group.groupId)),
+      subtitle: Text(l10n.memberCount(group.memberAccountIds.length)),
+      onTap: () => _openGroupChat(group.groupId),
     );
   }
 

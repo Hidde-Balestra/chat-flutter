@@ -859,6 +859,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'At the top of your contacts list there\'s always \"Yourself\" — a spot to save things for yourself, like a notepad. It also works without internet, and never leaves your device.'**
   String get helpMyNotesBody;
+
+  /// No description provided for @newContactMenuEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'New contact'**
+  String get newContactMenuEntry;
+
+  /// No description provided for @newGroupMenuEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get newGroupMenuEntry;
+
+  /// No description provided for @createGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new group'**
+  String get createGroupTitle;
+
+  /// No description provided for @groupNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name (only visible on this device)'**
+  String get groupNameHint;
+
+  /// No description provided for @selectMembersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose members'**
+  String get selectMembersLabel;
+
+  /// No description provided for @noAcceptedContactsForGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any contacts to add to a group yet. Add someone first.'**
+  String get noAcceptedContactsForGroup;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @groupsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groupsSectionTitle;
+
+  /// No description provided for @memberCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 member} other{{count} members}}'**
+  String memberCount(num count);
+
+  /// No description provided for @groupMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get groupMembersTitle;
+
+  /// No description provided for @youLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'(you)'**
+  String get youLabel;
+
+  /// No description provided for @addMemberAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add member'**
+  String get addMemberAction;
+
+  /// No description provided for @addMemberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'New member\'s Account ID'**
+  String get addMemberHint;
+
+  /// No description provided for @renameGroupAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit name'**
+  String get renameGroupAction;
+
+  /// No description provided for @leaveGroupMenuEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave group'**
+  String get leaveGroupMenuEntry;
+
+  /// No description provided for @leaveGroupConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this group?'**
+  String get leaveGroupConfirmTitle;
+
+  /// No description provided for @leaveGroupConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll stop receiving messages from this group, and it (plus its messages) will be removed from this device. Other members aren\'t notified, but can see that you\'ve left.'**
+  String get leaveGroupConfirmMessage;
+
+  /// No description provided for @viewMembersMenuEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'View members'**
+  String get viewMembersMenuEntry;
+
+  /// No description provided for @helpGroupsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Group chats'**
+  String get helpGroupsTitle;
+
+  /// No description provided for @helpGroupsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + and choose \"New group\" to start a conversation with several people at once — pick a name (only visible to you) and the contacts to include. Every message is individually end-to-end encrypted and sent to each member separately, so it takes a little longer for large groups. Tap the name at the top to view/add members, or to leave the group.'**
+  String get helpGroupsBody;
 }
 
 class _AppLocalizationsDelegate

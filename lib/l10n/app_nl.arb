@@ -192,5 +192,32 @@
   "myNotesClearConfirmMessage": "Dit verwijdert al je opgeslagen notities. Dit kan niet ongedaan gemaakt worden.",
 
   "helpMyNotesTitle": "Notities aan jezelf",
-  "helpMyNotesBody": "Bovenaan je contactenlijst staat altijd \"Jezelf\" — een plekje om dingen voor jezelf op te slaan, zoals een notitieblok. Dit werkt ook zonder internet, en verlaat je toestel nooit."
+  "helpMyNotesBody": "Bovenaan je contactenlijst staat altijd \"Jezelf\" — een plekje om dingen voor jezelf op te slaan, zoals een notitieblok. Dit werkt ook zonder internet, en verlaat je toestel nooit.",
+
+  "newContactMenuEntry": "Nieuw contact",
+  "newGroupMenuEntry": "Nieuwe groep",
+  "createGroupTitle": "Nieuwe groep aanmaken",
+  "groupNameHint": "Groepsnaam (alleen op dit toestel zichtbaar)",
+  "selectMembersLabel": "Kies leden",
+  "noAcceptedContactsForGroup": "Je hebt nog geen contacten om aan een groep toe te voegen. Voeg eerst iemand toe.",
+  "create": "Aanmaken",
+  "groupsSectionTitle": "Groepen",
+  "memberCount": "{count, plural, =1{1 lid} other{{count} leden}}",
+  "@memberCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "groupMembersTitle": "Leden",
+  "youLabel": "(jij)",
+  "addMemberAction": "Lid toevoegen",
+  "addMemberHint": "Account ID van het nieuwe lid",
+  "renameGroupAction": "Naam aanpassen",
+  "leaveGroupMenuEntry": "Groep verlaten",
+  "leaveGroupConfirmTitle": "Deze groep verlaten?",
+  "leaveGroupConfirmMessage": "Je ontvangt geen berichten meer van deze groep, en de groep + berichten worden van dit toestel verwijderd. Andere leden krijgen geen melding, maar kunnen wel zien dat je weg bent.",
+  "viewMembersMenuEntry": "Leden bekijken",
+
+  "helpGroupsTitle": "Groepschats",
+  "helpGroupsBody": "Tik op + en kies \"Nieuwe groep\" om een gesprek met meerdere mensen tegelijk te starten — kies een naam (alleen zichtbaar voor jou) en de contacten die mee moeten doen. Elk bericht wordt apart end-to-end versleuteld verstuurd naar elk lid, dus het duurt ietsjes langer bij grote groepen. Via de naam bovenin kun je leden bekijken/toevoegen, of de groep verlaten."
 }
