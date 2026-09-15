@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/messaging/session_manager.dart';
 import '../../core/storage/local_store.dart';
 import '../../l10n/app_localizations.dart';
+import 'safety_number_page.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({
@@ -192,6 +193,18 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Future<void> _showSafetyNumber() async {
+    final myAccountId = await widget.sessionManager.accountId;
+    if (!mounted) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => SafetyNumberPage(
+        myAccountId: myAccountId,
+        contactAccountId: widget.contactAccountId,
+        contactName: _displayName ?? _shorten(widget.contactAccountId),
+      ),
+    ));
+  }
+
   Future<void> _showRenameDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: _displayName ?? '');
@@ -271,6 +284,14 @@ class _ChatPageState extends State<ChatPage> {
               onTap: () {
                 Navigator.pop(sheetContext);
                 _showRenameDialog();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.verified_user_outlined),
+              title: Text(l10n.safetyNumberMenuEntry),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _showSafetyNumber();
               },
             ),
             if (_status == ContactStatus.blocked)

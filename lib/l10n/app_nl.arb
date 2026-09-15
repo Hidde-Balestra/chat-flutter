@@ -164,5 +164,24 @@
   "helpContactOptionsBody": "Tik in een open gesprek boven op de naam van je contact. Daar kun je diegene een naam geven, blokkeren of het hele gesprek verwijderen.",
 
   "helpAutoLockTitle": "De app op afstand of automatisch vergrendelen",
-  "helpAutoLockBody": "Bij Instellingen → Beveiliging vind je \"Nu vergrendelen\": sluit de app meteen af en vraagt de volgende keer weer om je pincode. Je kunt daar ook instellen dat dit vanzelf gebeurt nadat je de app een tijdje niet gebruikt hebt."
+  "helpAutoLockBody": "Bij Instellingen → Beveiliging vind je \"Nu vergrendelen\": sluit de app meteen af en vraagt de volgende keer weer om je pincode. Je kunt daar ook instellen dat dit vanzelf gebeurt nadat je de app een tijdje niet gebruikt hebt.",
+
+  "scanQrTitle": "Scan QR-code",
+  "scanQrButton": "QR-code scannen",
+
+  "safetyNumberMenuEntry": "Veiligheidsnummer",
+  "safetyNumberPageTitle": "Veiligheidsnummer",
+  "safetyNumberExplanation": "Vergelijk dit nummer met dat van {name} — bijvoorbeeld door het hardop voor te lezen aan de telefoon, of door elkaars QR-code te scannen. Komt het overeen? Dan weet je zeker dat niemand tussen jullie in zit.",
+  "@safetyNumberExplanation": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "safetyNumberLoading": "Wordt berekend…",
+
+  "helpQrTitle": "Een contact toevoegen met een QR-code",
+  "helpQrBody": "Bij \"Contact toevoegen\" kun je op het scan-icoontje tikken om iemands QR-code te scannen in plaats van het Account ID over te typen. Andersom kan ook: laat iemand jouw Account ID-scherm scannen (tik op het naamplaatje-icoontje rechtsboven) om jou toe te voegen.",
+
+  "helpSafetyNumberTitle": "Zeker weten dat je met de juiste persoon praat",
+  "helpSafetyNumberBody": "Tik in een gesprek boven op de naam van je contact en kies \"Veiligheidsnummer\". Dat is een reeks cijfers die alleen klopt als jullie apps rechtstreeks met elkaar praten, zonder dat iemand ertussen zit. Spreek het samen af — bijvoorbeeld door het hardop voor te lezen — en vergelijk of het overeenkomt."
 }

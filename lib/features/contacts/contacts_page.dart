@@ -11,6 +11,9 @@ import '../../core/storage/local_store.dart';
 import '../../l10n/app_localizations.dart';
 import '../chat/chat_page.dart';
 import '../settings/settings_page.dart';
+import '../shared/identicon.dart';
+import '../shared/qr_code_box.dart';
+import '../shared/qr_scan_page.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({
@@ -94,33 +97,56 @@ class _ContactsPageState extends State<ContactsPage> {
     final nameController = TextEditingController();
     final result = await showDialog<(String, String)>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.addContact),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: idController,
-              autofocus: true,
-              decoration: InputDecoration(hintText: l10n.contactAccountIdHint),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(hintText: l10n.contactNameHint),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(l10n.addContact),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: idController,
+                      autofocus: true,
+                      decoration:
+                          InputDecoration(hintText: l10n.contactAccountIdHint),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.qr_code_scanner),
+                    tooltip: l10n.scanQrButton,
+                    onPressed: () async {
+                      final scanned = await Navigator.of(context)
+                          .push<String>(MaterialPageRoute(
+                        builder: (context) => const QrScanPage(),
+                      ));
+                      if (scanned != null) {
+                        idController.text = scanned;
+                        setDialogState(() {});
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(hintText: l10n.contactNameHint),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.cancel)),
+            FilledButton(
+              onPressed: () => Navigator.pop(context,
+                  (idController.text.trim(), nameController.text.trim())),
+              child: Text(l10n.add),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.cancel)),
-          FilledButton(
-            onPressed: () => Navigator.pop(context,
-                (idController.text.trim(), nameController.text.trim())),
-            child: Text(l10n.add),
-          ),
-        ],
       ),
     );
 
@@ -223,6 +249,10 @@ class _ContactsPageState extends State<ContactsPage> {
               _myAccountId ?? '…',
               style: const TextStyle(fontFamily: 'monospace'),
             ),
+            if (_myAccountId != null) ...[
+              const SizedBox(height: 16),
+              Center(child: QrCodeBox(data: _myAccountId!)),
+            ],
           ],
         ),
         actions: [
@@ -306,11 +336,9 @@ class _ContactsPageState extends State<ContactsPage> {
       ),
       confirmDismiss: (_) => _confirmDelete(contact),
       child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(contact.status == ContactStatus.pending
-              ? Icons.mail_outline
-              : Icons.person),
-        ),
+        leading: contact.status == ContactStatus.pending
+            ? const CircleAvatar(child: Icon(Icons.mail_outline))
+            : Identicon(accountId: contact.accountId),
         title: Text(contact.displayName ?? _shorten(contact.accountId)),
         subtitle: Text(_shorten(contact.accountId)),
         trailing: IconButton(

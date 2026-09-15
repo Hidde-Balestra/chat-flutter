@@ -757,6 +757,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Under Settings → Security you\'ll find \"Lock now\": it closes the app right away and asks for your PIN again next time. You can also set it to do that on its own after you haven\'t used the app for a while.'**
   String get helpAutoLockBody;
+
+  /// No description provided for @scanQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get scanQrTitle;
+
+  /// No description provided for @scanQrButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get scanQrButton;
+
+  /// No description provided for @safetyNumberMenuEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety number'**
+  String get safetyNumberMenuEntry;
+
+  /// No description provided for @safetyNumberPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety number'**
+  String get safetyNumberPageTitle;
+
+  /// No description provided for @safetyNumberExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare this number with {name}\'s — for example by reading it aloud over the phone, or by scanning each other\'s QR code. Does it match? Then you know for sure no one is in between you.'**
+  String safetyNumberExplanation(String name);
+
+  /// No description provided for @safetyNumberLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating…'**
+  String get safetyNumberLoading;
+
+  /// No description provided for @helpQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding a contact with a QR code'**
+  String get helpQrTitle;
+
+  /// No description provided for @helpQrBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In \"Add contact\", you can tap the scan icon to scan someone\'s QR code instead of typing out their Account ID. It also works the other way round: have someone scan your Account ID screen (tap the badge icon in the top right) to add you.'**
+  String get helpQrBody;
+
+  /// No description provided for @helpSafetyNumberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Making sure you\'re talking to the right person'**
+  String get helpSafetyNumberTitle;
+
+  /// No description provided for @helpSafetyNumberBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In a conversation, tap your contact\'s name at the top and choose \"Safety number\". That\'s a string of digits that only matches if your two apps are talking directly to each other, with no one in between. Agree on a way to compare it together — for example by reading it aloud — and check that it matches.'**
+  String get helpSafetyNumberBody;
 }
 
 class _AppLocalizationsDelegate

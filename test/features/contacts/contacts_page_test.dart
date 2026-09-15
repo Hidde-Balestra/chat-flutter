@@ -7,6 +7,8 @@ import 'package:privacychat/core/settings/locale_controller.dart';
 import 'package:privacychat/core/storage/local_store.dart';
 import 'package:privacychat/features/chat/chat_page.dart';
 import 'package:privacychat/features/contacts/contacts_page.dart';
+import 'package:privacychat/features/shared/identicon.dart';
+import 'package:privacychat/features/shared/qr_code_box.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/messaging/fakes.dart';
@@ -134,6 +136,12 @@ void main() {
             (widget) => widget is SelectableText && widget.data == expectedId),
         findsOneWidget,
       );
+      // A QR code, for scanning instead of copying.
+      expect(
+        find.byWidgetPredicate(
+            (widget) => widget is QrCodeBox && widget.data == expectedId),
+        findsOneWidget,
+      );
     });
 
     testWidgets('opens Settings from the app bar', (tester) async {
@@ -228,6 +236,37 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.security), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows an identicon for accepted contacts and a QR scan button in '
+        'the add-contact dialog', (tester) async {
+      final server = FakeServer();
+      final store = InMemoryLocalStore();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: store,
+      );
+      await me.bootstrap();
+      final friendId = '05${'99' * 32}';
+      await store.upsertContact(friendId,
+          displayName: 'Vriend', status: ContactStatus.accepted);
+
+      await tester.pumpWidget(localizedTestApp(ContactsPage(
+        sessionManager: me,
+        store: store,
+        localeController: LocaleController(),
+        appLock: _testAppLock(),
+      )));
+      await tester.pump();
+
+      expect(find.byType(Identicon), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.qr_code_scanner), findsOneWidget);
     });
   });
 }

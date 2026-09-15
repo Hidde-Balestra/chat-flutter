@@ -10,6 +10,7 @@ class CryptoAlgorithms {
   static final Ed25519 ed25519 = Ed25519();
   static final Hmac hmacSha256 = Hmac.sha256();
   static final Chacha20 aead = Chacha20.poly1305Aead();
+  static final Sha256 sha256 = Sha256();
 
   /// 32-byte output — used to derive sub-seeds and the X3DH shared secret.
   static final Hkdf hkdf32 = Hkdf(hmac: Hmac.sha256(), outputLength: 32);

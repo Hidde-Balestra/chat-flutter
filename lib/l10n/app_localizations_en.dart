@@ -384,4 +384,39 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpAutoLockBody =>
       'Under Settings → Security you\'ll find \"Lock now\": it closes the app right away and asks for your PIN again next time. You can also set it to do that on its own after you haven\'t used the app for a while.';
+
+  @override
+  String get scanQrTitle => 'Scan QR code';
+
+  @override
+  String get scanQrButton => 'Scan QR code';
+
+  @override
+  String get safetyNumberMenuEntry => 'Safety number';
+
+  @override
+  String get safetyNumberPageTitle => 'Safety number';
+
+  @override
+  String safetyNumberExplanation(String name) {
+    return 'Compare this number with $name\'s — for example by reading it aloud over the phone, or by scanning each other\'s QR code. Does it match? Then you know for sure no one is in between you.';
+  }
+
+  @override
+  String get safetyNumberLoading => 'Calculating…';
+
+  @override
+  String get helpQrTitle => 'Adding a contact with a QR code';
+
+  @override
+  String get helpQrBody =>
+      'In \"Add contact\", you can tap the scan icon to scan someone\'s QR code instead of typing out their Account ID. It also works the other way round: have someone scan your Account ID screen (tap the badge icon in the top right) to add you.';
+
+  @override
+  String get helpSafetyNumberTitle =>
+      'Making sure you\'re talking to the right person';
+
+  @override
+  String get helpSafetyNumberBody =>
+      'In a conversation, tap your contact\'s name at the top and choose \"Safety number\". That\'s a string of digits that only matches if your two apps are talking directly to each other, with no one in between. Agree on a way to compare it together — for example by reading it aloud — and check that it matches.';
 }

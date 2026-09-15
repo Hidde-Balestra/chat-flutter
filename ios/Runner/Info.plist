@@ -8,6 +8,8 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Ontgrendel de app met Face ID in plaats van je pincode.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Nodig om een QR-code te scannen, bijvoorbeeld het Account ID van een contact.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Privacychat</string>
 	<key>CFBundleExecutable</key>

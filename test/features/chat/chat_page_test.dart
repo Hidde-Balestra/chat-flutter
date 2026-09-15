@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:privacychat/core/crypto/identity_key_pair.dart';
+import 'package:privacychat/core/crypto/safety_number.dart';
 import 'package:privacychat/core/messaging/session_manager.dart';
 import 'package:privacychat/core/storage/local_store.dart';
 import 'package:privacychat/features/chat/chat_page.dart';
+import 'package:privacychat/features/chat/safety_number_page.dart';
 
 import '../../core/messaging/fakes.dart';
 import '../../test_helpers/localized_test_app.dart';
@@ -259,6 +261,7 @@ void main() {
 
       expect(find.text('Account ID bekijken'), findsOneWidget);
       expect(find.text('Naam aanpassen'), findsOneWidget);
+      expect(find.text('Veiligheidsnummer'), findsOneWidget);
       expect(find.text('Blokkeren'), findsOneWidget);
       expect(find.text('Verwijderen'), findsOneWidget);
 
@@ -299,6 +302,35 @@ void main() {
           findsOneWidget);
       // The typed text is kept, not silently discarded.
       expect(find.text('hoi'), findsOneWidget);
+    });
+
+    testWidgets(
+        'opens the safety number screen showing the right computed number',
+        (tester) async {
+      final server = FakeServer();
+      final me = SessionManager(
+        identity: await IdentityKeyPair.generateRandom(),
+        backend: FakeChatBackend(server),
+        store: InMemoryLocalStore(),
+      );
+      await me.bootstrap();
+      final myAccountId = await me.accountId;
+      final store = InMemoryLocalStore();
+      final contactId = '05${'88' * 32}';
+      await store.upsertContact(contactId, displayName: 'Vriend');
+
+      await tester.pumpWidget(localizedTestApp(ChatPage(
+          sessionManager: me, store: store, contactAccountId: contactId)));
+      await tester.pump();
+
+      await tester.tap(find.text('Vriend'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Veiligheidsnummer'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SafetyNumberPage), findsOneWidget);
+      final expected = await SafetyNumber.compute(myAccountId, contactId);
+      expect(find.text(expected), findsOneWidget);
     });
   });
 }

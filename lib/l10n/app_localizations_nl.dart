@@ -387,4 +387,39 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get helpAutoLockBody =>
       'Bij Instellingen → Beveiliging vind je \"Nu vergrendelen\": sluit de app meteen af en vraagt de volgende keer weer om je pincode. Je kunt daar ook instellen dat dit vanzelf gebeurt nadat je de app een tijdje niet gebruikt hebt.';
+
+  @override
+  String get scanQrTitle => 'Scan QR-code';
+
+  @override
+  String get scanQrButton => 'QR-code scannen';
+
+  @override
+  String get safetyNumberMenuEntry => 'Veiligheidsnummer';
+
+  @override
+  String get safetyNumberPageTitle => 'Veiligheidsnummer';
+
+  @override
+  String safetyNumberExplanation(String name) {
+    return 'Vergelijk dit nummer met dat van $name — bijvoorbeeld door het hardop voor te lezen aan de telefoon, of door elkaars QR-code te scannen. Komt het overeen? Dan weet je zeker dat niemand tussen jullie in zit.';
+  }
+
+  @override
+  String get safetyNumberLoading => 'Wordt berekend…';
+
+  @override
+  String get helpQrTitle => 'Een contact toevoegen met een QR-code';
+
+  @override
+  String get helpQrBody =>
+      'Bij \"Contact toevoegen\" kun je op het scan-icoontje tikken om iemands QR-code te scannen in plaats van het Account ID over te typen. Andersom kan ook: laat iemand jouw Account ID-scherm scannen (tik op het naamplaatje-icoontje rechtsboven) om jou toe te voegen.';
+
+  @override
+  String get helpSafetyNumberTitle =>
+      'Zeker weten dat je met de juiste persoon praat';
+
+  @override
+  String get helpSafetyNumberBody =>
+      'Tik in een gesprek boven op de naam van je contact en kies \"Veiligheidsnummer\". Dat is een reeks cijfers die alleen klopt als jullie apps rechtstreeks met elkaar praten, zonder dat iemand ertussen zit. Spreek het samen af — bijvoorbeeld door het hardop voor te lezen — en vergelijk of het overeenkomt.';
 }
