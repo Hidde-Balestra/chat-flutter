@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/network/tor_service.dart';
@@ -16,6 +17,7 @@ class SettingsPage extends StatefulWidget {
     required this.appLock,
     this.torService,
     this.onLockNow,
+    this.onResetToFreshTestAccount,
   });
 
   final LocaleController localeController;
@@ -30,6 +32,12 @@ class SettingsPage extends StatefulWidget {
   /// is set (and a PIN is enabled — there'd be nothing to lock back into
   /// otherwise).
   final VoidCallback? onLockNow;
+
+  /// Testing-only: wipes the current identity/database and starts a brand
+  /// new one. Null in contexts (like most tests) that don't exercise that
+  /// flow; even when set, the entry only appears in [kDebugMode] and only
+  /// while app-lock is off (see [_confirmResetToFreshTestAccount]).
+  final Future<void> Function()? onResetToFreshTestAccount;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -147,6 +155,29 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _confirmResetToFreshTestAccount() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.settingsFakeAccountConfirmTitle),
+        content: Text(l10n.settingsFakeAccountConfirmMessage),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel)),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.settingsFakeAccountConfirmAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await widget.onResetToFreshTestAccount?.call();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -228,6 +259,19 @@ class _SettingsPageState extends State<SettingsPage> {
                       builder: (_) =>
                           TorStatusPage(torService: widget.torService!),
                     )),
+                  ),
+                ],
+                if (kDebugMode && widget.onResetToFreshTestAccount != null) ...[
+                  const Divider(),
+                  _SectionHeader(l10n.settingsDebugSection),
+                  ListTile(
+                    leading: const Icon(Icons.science_outlined),
+                    title: Text(l10n.settingsFakeAccount),
+                    subtitle: Text(_lockEnabled
+                        ? l10n.settingsFakeAccountBlockedByLock
+                        : l10n.settingsFakeAccountSubtitle),
+                    enabled: !_lockEnabled,
+                    onTap: _confirmResetToFreshTestAccount,
                   ),
                 ],
                 const Divider(),

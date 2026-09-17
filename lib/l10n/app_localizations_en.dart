@@ -361,6 +361,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lockNowAction => 'Lock';
 
   @override
+  String get settingsDebugSection => 'Testing';
+
+  @override
+  String get settingsFakeAccount => 'New test account';
+
+  @override
+  String get settingsFakeAccountSubtitle =>
+      'Wipes your current identity and messages and creates a brand-new, throwaway account — handy for testing without a second device';
+
+  @override
+  String get settingsFakeAccountBlockedByLock =>
+      'Turn off app-lock first to use this';
+
+  @override
+  String get settingsFakeAccountConfirmTitle => 'Create a new test account?';
+
+  @override
+  String get settingsFakeAccountConfirmMessage =>
+      'This permanently deletes your current identity and all local messages, and replaces them with a brand-new account. This can\'t be undone.';
+
+  @override
+  String get settingsFakeAccountConfirmAction => 'Create';
+
+  @override
   String get viewAccountId => 'View Account ID';
 
   @override

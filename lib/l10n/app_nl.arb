@@ -156,6 +156,14 @@
   "lockNowConfirmMessage": "De app wordt afgesloten. De volgende keer moet je je pincode (of vingerafdruk) weer invoeren.",
   "lockNowAction": "Vergrendelen",
 
+  "settingsDebugSection": "Testen",
+  "settingsFakeAccount": "Nieuw test-account",
+  "settingsFakeAccountSubtitle": "Verwijdert je huidige identiteit en berichten en maakt een gloednieuw, wegwerp-account aan — handig om te testen zonder tweede toestel",
+  "settingsFakeAccountBlockedByLock": "Zet eerst app-vergrendeling uit om dit te gebruiken",
+  "settingsFakeAccountConfirmTitle": "Nieuw test-account aanmaken?",
+  "settingsFakeAccountConfirmMessage": "Dit verwijdert definitief je huidige identiteit en alle lokale berichten, en vervangt ze door een gloednieuw account. Dit kan niet ongedaan gemaakt worden.",
+  "settingsFakeAccountConfirmAction": "Aanmaken",
+
   "viewAccountId": "Account ID bekijken",
   "contactAccountIdTitle": "Account ID van dit contact",
   "stillConnecting": "Nog aan het verbinden — probeer het over een paar seconden opnieuw.",

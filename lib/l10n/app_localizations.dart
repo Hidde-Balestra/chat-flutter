@@ -716,6 +716,48 @@ abstract class AppLocalizations {
   /// **'Lock'**
   String get lockNowAction;
 
+  /// No description provided for @settingsDebugSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing'**
+  String get settingsDebugSection;
+
+  /// No description provided for @settingsFakeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'New test account'**
+  String get settingsFakeAccount;
+
+  /// No description provided for @settingsFakeAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wipes your current identity and messages and creates a brand-new, throwaway account — handy for testing without a second device'**
+  String get settingsFakeAccountSubtitle;
+
+  /// No description provided for @settingsFakeAccountBlockedByLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off app-lock first to use this'**
+  String get settingsFakeAccountBlockedByLock;
+
+  /// No description provided for @settingsFakeAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new test account?'**
+  String get settingsFakeAccountConfirmTitle;
+
+  /// No description provided for @settingsFakeAccountConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes your current identity and all local messages, and replaces them with a brand-new account. This can\'t be undone.'**
+  String get settingsFakeAccountConfirmMessage;
+
+  /// No description provided for @settingsFakeAccountConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get settingsFakeAccountConfirmAction;
+
   /// No description provided for @viewAccountId.
   ///
   /// In en, this message translates to:

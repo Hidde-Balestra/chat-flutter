@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'app_config.dart';
 import 'core/api/http_chat_backend.dart';
+import 'core/debug/fake_account_reset.dart';
 import 'core/messaging/session_manager.dart';
 import 'core/network/platform_tor_service.dart';
 import 'core/network/tor_http_client.dart';
@@ -177,6 +178,25 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
     SystemNavigator.pop();
   }
 
+  /// Debug-only testing helper wired up from Settings (see
+  /// `resetToFreshTestAccount` there for why it's gated on app-lock being
+  /// off): wipes the current identity and local database, then re-runs the
+  /// exact same bootstrap a cold start with no PIN would — generating a
+  /// fresh identity and registering it with the backend as a brand-new
+  /// account.
+  Future<void> _resetToFreshTestAccount() async {
+    final session = _session;
+    if (session == null) return;
+    await resetToFreshTestAccount(session.store);
+    if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    setState(() {
+      _session = null;
+      _stage = _Stage.loading;
+    });
+    await _prepare(passphrase: null);
+  }
+
   Future<void> _checkLock() async {
     setState(() => _stage = _Stage.loading);
     try {
@@ -250,6 +270,7 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
           appLock: _appLock,
           torService: session.torService,
           onLockNow: _lockNow,
+          onResetToFreshTestAccount: _resetToFreshTestAccount,
         );
     }
   }

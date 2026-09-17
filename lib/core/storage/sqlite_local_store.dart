@@ -14,6 +14,11 @@ class SqliteLocalStore implements LocalStore {
 
   final AppDatabase _db;
 
+  /// Exposed only for the debug-only "new test account" reset (see
+  /// `lib/core/debug/fake_account_reset.dart`), which needs to close the
+  /// underlying connection before the file beneath it can be deleted.
+  AppDatabase get database => _db;
+
   @override
   Future<void> upsertContact(
     String accountId, {

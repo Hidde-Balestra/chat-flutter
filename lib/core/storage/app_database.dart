@@ -17,6 +17,19 @@ class AppDatabase {
 
   final Database raw;
 
+  Future<void> close() => raw.close();
+
+  /// Deletes the on-device database file outright — used only by the
+  /// debug-only "new test account" reset (see
+  /// `lib/core/debug/fake_account_reset.dart`). The passphrase in the
+  /// keystore is deliberately left untouched: [open] will happily reuse it
+  /// to create a brand-new (empty) encrypted file, and leaving it alone
+  /// avoids disturbing [AppLockController]'s PIN-wrapped copy of it.
+  static Future<void> deleteFile({String fileName = 'privacychat.db'}) async {
+    final directory = await getApplicationDocumentsDirectory();
+    await deleteDatabase(path.join(directory.path, fileName));
+  }
+
   /// Shared with [AppLockController], which moves the value living under
   /// this key into a PIN-encrypted form instead — see its doc comment.
   static const passphraseStorageKey = 'local_db_passphrase_v1';

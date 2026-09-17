@@ -26,6 +26,7 @@ class ContactsPage extends StatefulWidget {
     required this.appLock,
     this.torService,
     this.onLockNow,
+    this.onResetToFreshTestAccount,
   });
 
   final SessionManager sessionManager;
@@ -41,6 +42,11 @@ class ContactsPage extends StatefulWidget {
   /// Closes and locks the app. Forwarded down to Settings; null in
   /// contexts (like most tests) that don't exercise that flow.
   final VoidCallback? onLockNow;
+
+  /// Debug-only testing helper, forwarded down to Settings; null in
+  /// contexts (like most tests) that don't exercise that flow. See
+  /// `resetToFreshTestAccount` in `core/debug/fake_account_reset.dart`.
+  final Future<void> Function()? onResetToFreshTestAccount;
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
@@ -443,6 +449,7 @@ class _ContactsPageState extends State<ContactsPage> {
                 appLock: widget.appLock,
                 torService: widget.torService,
                 onLockNow: widget.onLockNow,
+                onResetToFreshTestAccount: widget.onResetToFreshTestAccount,
               ),
             )),
           ),

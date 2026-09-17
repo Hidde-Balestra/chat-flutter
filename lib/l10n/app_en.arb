@@ -156,6 +156,14 @@
   "lockNowConfirmMessage": "The app will close. Next time you'll need to enter your PIN (or fingerprint) again.",
   "lockNowAction": "Lock",
 
+  "settingsDebugSection": "Testing",
+  "settingsFakeAccount": "New test account",
+  "settingsFakeAccountSubtitle": "Wipes your current identity and messages and creates a brand-new, throwaway account — handy for testing without a second device",
+  "settingsFakeAccountBlockedByLock": "Turn off app-lock first to use this",
+  "settingsFakeAccountConfirmTitle": "Create a new test account?",
+  "settingsFakeAccountConfirmMessage": "This permanently deletes your current identity and all local messages, and replaces them with a brand-new account. This can't be undone.",
+  "settingsFakeAccountConfirmAction": "Create",
+
   "viewAccountId": "View Account ID",
   "contactAccountIdTitle": "This contact's Account ID",
   "stillConnecting": "Still connecting — try again in a few seconds.",

@@ -250,5 +250,62 @@ void main() {
 
       expect(find.byType(TorStatusPage), findsOneWidget);
     });
+
+    testWidgets(
+        'the fake-account testing entry asks for confirmation before '
+        'resetting, and is disabled while app-lock is on', (tester) async {
+      final platform = installFakeSecureStorage();
+      platform.values[AppDatabase.passphraseStorageKey] =
+          'existing-db-passphrase';
+      final appLock = AppLockController(pbkdf2Iterations: _testIterations);
+      var resetCount = 0;
+
+      await tester.pumpWidget(localizedTestApp(SettingsPage(
+        localeController: LocaleController(),
+        appLock: appLock,
+        onResetToFreshTestAccount: () async => resetCount++,
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nieuw test-account'), findsOneWidget);
+
+      await tester.tap(find.text('Nieuw test-account'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nieuw test-account aanmaken?'), findsOneWidget);
+      expect(resetCount, 0); // not yet — still needs confirming
+
+      await tester.tap(find.text('Aanmaken'));
+      await tester.pumpAndSettle();
+      expect(resetCount, 1);
+
+      // Turn app-lock on, then the entry should refuse to act.
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.text('Volgende'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.text('Instellen'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Nieuw test-account'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nieuw test-account aanmaken?'), findsNothing);
+      expect(resetCount, 1); // unchanged
+    });
+
+    testWidgets('the fake-account testing entry is absent without a callback',
+        (tester) async {
+      installFakeSecureStorage();
+      final appLock = AppLockController(pbkdf2Iterations: _testIterations);
+
+      await tester.pumpWidget(localizedTestApp(SettingsPage(
+        localeController: LocaleController(),
+        appLock: appLock,
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nieuw test-account'), findsNothing);
+    });
   });
 }

@@ -363,6 +363,30 @@ class AppLocalizationsNl extends AppLocalizations {
   String get lockNowAction => 'Vergrendelen';
 
   @override
+  String get settingsDebugSection => 'Testen';
+
+  @override
+  String get settingsFakeAccount => 'Nieuw test-account';
+
+  @override
+  String get settingsFakeAccountSubtitle =>
+      'Verwijdert je huidige identiteit en berichten en maakt een gloednieuw, wegwerp-account aan — handig om te testen zonder tweede toestel';
+
+  @override
+  String get settingsFakeAccountBlockedByLock =>
+      'Zet eerst app-vergrendeling uit om dit te gebruiken';
+
+  @override
+  String get settingsFakeAccountConfirmTitle => 'Nieuw test-account aanmaken?';
+
+  @override
+  String get settingsFakeAccountConfirmMessage =>
+      'Dit verwijdert definitief je huidige identiteit en alle lokale berichten, en vervangt ze door een gloednieuw account. Dit kan niet ongedaan gemaakt worden.';
+
+  @override
+  String get settingsFakeAccountConfirmAction => 'Aanmaken';
+
+  @override
   String get viewAccountId => 'Account ID bekijken';
 
   @override
