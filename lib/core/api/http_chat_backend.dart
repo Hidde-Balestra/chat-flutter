@@ -47,11 +47,21 @@ class HttpChatBackend implements ChatBackend {
   /// A malformed or unexpected response (e.g. a proxy/hosting error page
   /// swapped in for a 500) can desync the persistent connection underneath
   /// [_client], so every later request on it keeps failing even once the
-  /// server recovers. Recreating the client on any failure drops that
+  /// server recovers. Recreating the client on such a failure drops that
   /// connection instead of reusing a possibly-poisoned one.
+  ///
+  /// [HttpChatBackendException] is deliberately excluded: it means a
+  /// complete, well-formed HTTP response came back (just a 4xx/5xx one), so
+  /// the connection itself is fine. [_client] is shared by every concurrent
+  /// call, so closing it here too would abort any *other* request still
+  /// in flight on it — e.g. a validation error on one call corrupting an
+  /// unrelated call's in-progress request body into something the server
+  /// then fails to parse as JSON.
   Future<T> _resilient<T>(Future<T> Function() action) async {
     try {
       return await action();
+    } on HttpChatBackendException {
+      rethrow;
     } catch (_) {
       _client.close();
       _client = http.Client();

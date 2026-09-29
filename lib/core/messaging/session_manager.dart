@@ -37,6 +37,17 @@ class SessionManager {
   String? _accountId;
   bool _isBootstrapped = false;
 
+  /// [ContactsPage], [ChatPage] and [GroupChatPage] each run their own
+  /// polling timer against this same manager, and a single timer's own tick
+  /// can outlast its interval over a slow Tor circuit — so without this,
+  /// two [pollAndDecrypt] calls can run concurrently, both fetch the same
+  /// not-yet-acked envelopes, and the second one to decrypt each envelope
+  /// fails with "duplicate or already-processed" (the Double Ratchet key
+  /// was already consumed by the first). A caller that arrives while a poll
+  /// is already running just awaits that same in-flight call instead of
+  /// starting a redundant, racy one of its own.
+  Future<Set<String>>? _pollInFlight;
+
   Future<String> get accountId async =>
       _accountId ??= await _identity.accountId();
 
@@ -438,7 +449,17 @@ class SessionManager {
   /// acknowledges every processed envelope so the server can delete it.
   /// Returns the ids (contact or group) of every conversation that
   /// received a new message.
-  Future<Set<String>> pollAndDecrypt() async {
+  Future<Set<String>> pollAndDecrypt() {
+    final inFlight = _pollInFlight;
+    if (inFlight != null) {
+      return inFlight;
+    }
+    final result = _pollAndDecrypt();
+    _pollInFlight = result;
+    return result.whenComplete(() => _pollInFlight = null);
+  }
+
+  Future<Set<String>> _pollAndDecrypt() async {
     final envelopes = await _backend.pollMailbox();
     final updatedConversations = <String>{};
     final toAck = <int>[];
