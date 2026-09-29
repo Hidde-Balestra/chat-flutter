@@ -71,6 +71,13 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get messageStatusSending => 'Bezig met verzenden…';
+
+  @override
+  String get messageStatusFailedTapToRetry =>
+      'Versturen mislukt — tik om opnieuw te proberen';
+
+  @override
   String get settingsTitle => 'Instellingen';
 
   @override

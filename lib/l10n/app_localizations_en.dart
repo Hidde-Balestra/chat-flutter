@@ -71,6 +71,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get messageStatusSending => 'Sending…';
+
+  @override
+  String get messageStatusFailedTapToRetry => 'Couldn\'t send — tap to retry';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

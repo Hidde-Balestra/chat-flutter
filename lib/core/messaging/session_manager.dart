@@ -138,30 +138,85 @@ class SessionManager {
       // sending and receiving chains are only symmetric between two
       // *different* parties) — so this skips X3DH/the ratchet/the server
       // entirely and is just saved straight to the local (already
-      // encrypted-at-rest) store. Works fully offline, on purpose.
+      // encrypted-at-rest) store. Works fully offline, on purpose — always
+      // "sent", since nothing was ever in flight to fail.
       await _store.saveMessage(
           contactId: contactAccountId, direction: 'out', body: text);
       return;
     }
 
-    // A defense-in-depth check, not the primary UX for this: callers (e.g.
-    // ChatPage) should already call ensureBootstrapped() themselves first
-    // and show a friendly "still connecting" message rather than ever
-    // reaching this exception — see its doc comment for why this can be
-    // false even after the app has been open for a while (Tor bootstrap,
-    // no connectivity yet, etc).
-    if (!await ensureBootstrapped()) {
-      throw StateError('not connected yet — try again once connected');
-    }
+    // Saved as `sending` *before* any network attempt, and always kept
+    // around either way (moved to `sent` or `failed` below, never removed)
+    // — previously this only reached the store after a successful send, so
+    // a failure silently discarded the message the user had just typed,
+    // with only a toast to show for it. Keeping the row means the UI can
+    // show it as failed and offer to retry, instead of it just vanishing.
+    final messageId = await _store.saveMessage(
+      contactId: contactAccountId,
+      direction: 'out',
+      body: text,
+      status: MessageStatus.sending,
+    );
 
-    await _encryptAndSendToRecipient(
+    await _deliverAndTrackStatus(
+      messageId: messageId,
       myAccountId: myAccountId,
       recipientAccountId: contactAccountId,
-      plaintext: MessagePayload(body: text).encode(),
+      text: text,
     );
-    await _store.upsertContact(contactAccountId);
-    await _store.saveMessage(
-        contactId: contactAccountId, direction: 'out', body: text);
+  }
+
+  /// Retries a message that previously ended up [MessageStatus.failed] (or
+  /// is still stuck on [MessageStatus.sending], e.g. the app was killed
+  /// mid-send), reusing the same row rather than creating a duplicate.
+  Future<void> resendMessage({
+    required String contactAccountId,
+    required int messageId,
+    required String text,
+  }) async {
+    final myAccountId = await accountId;
+    await _store.updateMessageStatus(messageId, MessageStatus.sending);
+    await _deliverAndTrackStatus(
+      messageId: messageId,
+      myAccountId: myAccountId,
+      recipientAccountId: contactAccountId,
+      text: text,
+    );
+  }
+
+  /// Shared by [sendMessage] and [resendMessage]: attempts delivery and
+  /// leaves [messageId] marked [MessageStatus.sent] or [MessageStatus.failed]
+  /// depending on the outcome, then rethrows on failure so callers (e.g.
+  /// ChatPage) can still show their own "couldn't send" toast alongside the
+  /// now-visible failed bubble.
+  Future<void> _deliverAndTrackStatus({
+    required int messageId,
+    required String myAccountId,
+    required String recipientAccountId,
+    required String text,
+  }) async {
+    try {
+      // A defense-in-depth check, not the primary UX for this: callers
+      // (e.g. ChatPage) should already call ensureBootstrapped() themselves
+      // first and show a friendly "still connecting" message rather than
+      // ever reaching this exception — see its doc comment for why this
+      // can be false even after the app has been open for a while (Tor
+      // bootstrap, no connectivity yet, etc).
+      if (!await ensureBootstrapped()) {
+        throw StateError('not connected yet — try again once connected');
+      }
+
+      await _encryptAndSendToRecipient(
+        myAccountId: myAccountId,
+        recipientAccountId: recipientAccountId,
+        plaintext: MessagePayload(body: text).encode(),
+      );
+      await _store.upsertContact(recipientAccountId);
+      await _store.updateMessageStatus(messageId, MessageStatus.sent);
+    } catch (_) {
+      await _store.updateMessageStatus(messageId, MessageStatus.failed);
+      rethrow;
+    }
   }
 
   /// Sends [text] to every member of [groupId] (except yourself) as an
@@ -176,15 +231,28 @@ class SessionManager {
     List<String> memberAccountIds,
     String text,
   ) async {
+    // Saved as `sending` up front for the same reason as [sendMessage]: so
+    // a failure (or a member or two failing while others succeed) leaves a
+    // visible, retryable bubble instead of silently losing the text.
+    final messageId = await _store.saveMessage(
+      contactId: groupId,
+      direction: 'out',
+      body: text,
+      status: MessageStatus.sending,
+    );
+
     if (!await ensureBootstrapped()) {
+      await _store.updateMessageStatus(messageId, MessageStatus.failed);
       throw StateError('not connected yet — try again once connected');
     }
     final myAccountId = await accountId;
     final plaintext = MessagePayload(body: text, groupId: groupId).encode();
 
+    var attempted = 0;
     final failures = <String, Object>{};
     for (final memberId in memberAccountIds) {
       if (memberId == myAccountId) continue;
+      attempted++;
       try {
         await _encryptAndSendToRecipient(
           myAccountId: myAccountId,
@@ -196,7 +264,66 @@ class SessionManager {
       }
     }
 
-    await _store.saveMessage(contactId: groupId, direction: 'out', body: text);
+    // Delivering to at least one member still counts as "sent" for the
+    // status shown to the sender — a full resend on partial failure would
+    // duplicate the message for members who already received it fine. The
+    // per-member failure detail is still surfaced via the thrown error
+    // below (and its toast), just not tracked per-recipient in the UI.
+    await _store.updateMessageStatus(
+      messageId,
+      attempted > 0 && failures.length == attempted
+          ? MessageStatus.failed
+          : MessageStatus.sent,
+    );
+
+    if (failures.isNotEmpty) {
+      throw StateError(
+          'failed to deliver to ${failures.length} member(s): ${failures.keys.join(', ')}');
+    }
+  }
+
+  /// Retries a group message that previously ended up [MessageStatus.failed]
+  /// (or every member failed on the original attempt), reusing the same row
+  /// rather than creating a duplicate. Mirrors [sendGroupMessage]'s
+  /// per-member fan-out and "failed only if every attempted member failed"
+  /// status rule.
+  Future<void> resendGroupMessage({
+    required String groupId,
+    required List<String> memberAccountIds,
+    required int messageId,
+    required String text,
+  }) async {
+    await _store.updateMessageStatus(messageId, MessageStatus.sending);
+
+    if (!await ensureBootstrapped()) {
+      await _store.updateMessageStatus(messageId, MessageStatus.failed);
+      throw StateError('not connected yet — try again once connected');
+    }
+    final myAccountId = await accountId;
+    final plaintext = MessagePayload(body: text, groupId: groupId).encode();
+
+    var attempted = 0;
+    final failures = <String, Object>{};
+    for (final memberId in memberAccountIds) {
+      if (memberId == myAccountId) continue;
+      attempted++;
+      try {
+        await _encryptAndSendToRecipient(
+          myAccountId: myAccountId,
+          recipientAccountId: memberId,
+          plaintext: plaintext,
+        );
+      } catch (e) {
+        failures[memberId] = e;
+      }
+    }
+
+    await _store.updateMessageStatus(
+      messageId,
+      attempted > 0 && failures.length == attempted
+          ? MessageStatus.failed
+          : MessageStatus.sent,
+    );
 
     if (failures.isNotEmpty) {
       throw StateError(

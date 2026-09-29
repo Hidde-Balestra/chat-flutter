@@ -51,6 +51,28 @@ class GroupRecord {
   final List<String> memberAccountIds;
 }
 
+/// Delivery status of an outgoing ([MessageRecord.direction] == 'out')
+/// message. Meaningless for incoming messages and for notes-to-self (both
+/// are always [sent] — a note never touches the network, and an incoming
+/// message, by definition, already arrived).
+enum MessageStatus {
+  /// Saved locally, delivery to the server not yet confirmed.
+  sending,
+
+  /// The server accepted it.
+  sent,
+
+  /// The server rejected it, or it never reached the server (offline,
+  /// bootstrap not done, etc.) — [SessionManager.resendMessage] retries it
+  /// in place, reusing the same row instead of creating a duplicate.
+  failed;
+
+  static MessageStatus fromDb(String value) => MessageStatus.values.firstWhere(
+        (status) => status.name == value,
+        orElse: () => MessageStatus.sent,
+      );
+}
+
 class MessageRecord {
   MessageRecord({
     required this.id,
@@ -58,6 +80,7 @@ class MessageRecord {
     required this.direction,
     required this.body,
     required this.sentAt,
+    this.status = MessageStatus.sent,
   });
 
   final int id;
@@ -67,6 +90,7 @@ class MessageRecord {
   final String direction;
   final String body;
   final DateTime sentAt;
+  final MessageStatus status;
 }
 
 /// Everything [SessionManager] and the UI need to persist locally. Kept as
@@ -107,12 +131,21 @@ abstract class LocalStore {
 
   Future<ContactRecord?> getContact(String accountId);
 
-  Future<void> saveMessage({
+  /// Returns the new row's id — callers that save an outgoing message as
+  /// [MessageStatus.sending] need it to later call [updateMessageStatus]
+  /// once the network attempt finishes.
+  Future<int> saveMessage({
     required String contactId,
     required String direction,
     required String body,
     DateTime? sentAt,
+    MessageStatus status = MessageStatus.sent,
   });
+
+  /// Updates the delivery status of an already-saved message in place
+  /// (used to move a [MessageStatus.sending] row to [MessageStatus.sent]
+  /// or [MessageStatus.failed], including on a retry).
+  Future<void> updateMessageStatus(int messageId, MessageStatus status);
 
   Future<List<MessageRecord>> messagesWith(String contactId);
 

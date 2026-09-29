@@ -212,6 +212,18 @@ abstract class AppLocalizations {
   /// **'Couldn\'t send: {error}'**
   String sendFailed(String error);
 
+  /// No description provided for @messageStatusSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get messageStatusSending;
+
+  /// No description provided for @messageStatusFailedTapToRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send — tap to retry'**
+  String get messageStatusFailedTapToRetry;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:

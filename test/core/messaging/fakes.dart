@@ -375,19 +375,38 @@ class InMemoryLocalStore implements LocalStore {
   Future<List<ContactRecord>> listContacts() async => _contacts.values.toList();
 
   @override
-  Future<void> saveMessage({
+  Future<int> saveMessage({
     required String contactId,
     required String direction,
     required String body,
     DateTime? sentAt,
+    MessageStatus status = MessageStatus.sent,
   }) async {
+    final id = _nextMessageId++;
     _messages.add(MessageRecord(
-      id: _nextMessageId++,
+      id: id,
       contactId: contactId,
       direction: direction,
       body: body,
       sentAt: sentAt ?? DateTime.now(),
+      status: status,
     ));
+    return id;
+  }
+
+  @override
+  Future<void> updateMessageStatus(int messageId, MessageStatus status) async {
+    final index = _messages.indexWhere((message) => message.id == messageId);
+    if (index == -1) return;
+    final existing = _messages[index];
+    _messages[index] = MessageRecord(
+      id: existing.id,
+      contactId: existing.contactId,
+      direction: existing.direction,
+      body: existing.body,
+      sentAt: existing.sentAt,
+      status: status,
+    );
   }
 
   @override

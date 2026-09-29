@@ -115,6 +115,24 @@ class _GroupChatPageState extends State<GroupChatPage> {
     }
   }
 
+  Future<void> _retry(MessageRecord message) async {
+    final group = _group;
+    if (group == null) return;
+    try {
+      await widget.sessionManager.resendGroupMessage(
+        groupId: widget.groupId,
+        memberAccountIds: group.memberAccountIds,
+        messageId: message.id,
+        text: message.body,
+      );
+    } catch (_) {
+      // Status is already updated to failed by resendGroupMessage itself —
+      // the bubble's own icon is the feedback here, no separate toast needed.
+    } finally {
+      await _refresh();
+    }
+  }
+
   Future<void> _showRenameDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: _group?.displayName ?? '');
@@ -336,7 +354,10 @@ class _GroupChatPageState extends State<GroupChatPage> {
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final message = _messages[_messages.length - 1 - index];
-                      return MessageBubble(message: message);
+                      return MessageBubble(
+                        message: message,
+                        onRetry: () => _retry(message),
+                      );
                     },
                   ),
           ),

@@ -26,7 +26,7 @@ class HttpChatBackend implements ChatBackend {
 
   /// Must end with a trailing slash, e.g. `https://chat.example.com/`.
   final Uri _baseUrl;
-  final http.Client _client;
+  http.Client _client;
   String? _bearerToken;
 
   Uri _uri(String path) => _baseUrl.resolve(path);
@@ -44,24 +44,43 @@ class HttpChatBackend implements ChatBackend {
     return headers;
   }
 
+  /// A malformed or unexpected response (e.g. a proxy/hosting error page
+  /// swapped in for a 500) can desync the persistent connection underneath
+  /// [_client], so every later request on it keeps failing even once the
+  /// server recovers. Recreating the client on any failure drops that
+  /// connection instead of reusing a possibly-poisoned one.
+  Future<T> _resilient<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } catch (_) {
+      _client.close();
+      _client = http.Client();
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> _post(
     String path,
     Map<String, dynamic> body, {
     bool authenticated = false,
-  }) async {
-    final response = await _client.post(
-      _uri(path),
-      headers: _headers(authenticated: authenticated),
-      body: jsonEncode(body),
-    );
-    return _decode(response);
+  }) {
+    return _resilient(() async {
+      final response = await _client.post(
+        _uri(path),
+        headers: _headers(authenticated: authenticated),
+        body: jsonEncode(body),
+      );
+      return _decode(response);
+    });
   }
 
   Future<Map<String, dynamic>> _get(String path,
-      {bool authenticated = false}) async {
-    final response = await _client.get(_uri(path),
-        headers: _headers(authenticated: authenticated));
-    return _decode(response);
+      {bool authenticated = false}) {
+    return _resilient(() async {
+      final response = await _client.get(_uri(path),
+          headers: _headers(authenticated: authenticated));
+      return _decode(response);
+    });
   }
 
   Map<String, dynamic> _decode(http.Response response) {

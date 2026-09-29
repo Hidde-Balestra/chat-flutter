@@ -142,6 +142,21 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  Future<void> _retry(MessageRecord message) async {
+    try {
+      await widget.sessionManager.resendMessage(
+        contactAccountId: widget.contactAccountId,
+        messageId: message.id,
+        text: message.body,
+      );
+    } catch (_) {
+      // Status is already updated to failed by resendMessage itself — the
+      // bubble's own icon is the feedback here, no separate toast needed.
+    } finally {
+      await _refresh();
+    }
+  }
+
   Future<void> _accept() async {
     await widget.store
         .setContactStatus(widget.contactAccountId, ContactStatus.accepted);
@@ -428,7 +443,10 @@ class _ChatPageState extends State<ChatPage> {
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final message = _messages[_messages.length - 1 - index];
-                      return MessageBubble(message: message);
+                      return MessageBubble(
+                        message: message,
+                        onRetry: () => _retry(message),
+                      );
                     },
                   ),
           ),

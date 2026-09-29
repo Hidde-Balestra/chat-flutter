@@ -57,7 +57,7 @@ class AppDatabase {
     final db = await openDatabase(
       dbPath,
       password: passphrase,
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE contacts (
@@ -73,7 +73,8 @@ class AppDatabase {
             contact_id TEXT NOT NULL,
             direction TEXT NOT NULL,
             body TEXT NOT NULL,
-            sent_at INTEGER NOT NULL
+            sent_at INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'sent'
           )
         ''');
         await db.execute(
@@ -112,6 +113,13 @@ class AppDatabase {
         }
         if (oldVersion < 3) {
           await _createGroupTables(db);
+        }
+        if (oldVersion < 4) {
+          // Every message that already exists was, by definition, already
+          // successfully sent (or received) before this column existed —
+          // 'sent' is the correct default for all of them.
+          await db.execute(
+              "ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'sent'");
         }
       },
     );

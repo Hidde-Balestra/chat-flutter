@@ -29,6 +29,8 @@
       "error": {"type": "String"}
     }
   },
+  "messageStatusSending": "Bezig met verzenden…",
+  "messageStatusFailedTapToRetry": "Versturen mislukt — tik om opnieuw te proberen",
 
   "settingsTitle": "Instellingen",
   "settingsLanguage": "Taal",

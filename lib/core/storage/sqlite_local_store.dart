@@ -110,18 +110,30 @@ class SqliteLocalStore implements LocalStore {
   }
 
   @override
-  Future<void> saveMessage({
+  Future<int> saveMessage({
     required String contactId,
     required String direction,
     required String body,
     DateTime? sentAt,
-  }) async {
-    await _db.raw.insert('messages', {
+    MessageStatus status = MessageStatus.sent,
+  }) {
+    return _db.raw.insert('messages', {
       'contact_id': contactId,
       'direction': direction,
       'body': body,
       'sent_at': (sentAt ?? DateTime.now()).millisecondsSinceEpoch,
+      'status': status.name,
     });
+  }
+
+  @override
+  Future<void> updateMessageStatus(int messageId, MessageStatus status) async {
+    await _db.raw.update(
+      'messages',
+      {'status': status.name},
+      where: 'id = ?',
+      whereArgs: [messageId],
+    );
   }
 
   @override
@@ -140,6 +152,8 @@ class SqliteLocalStore implements LocalStore {
               body: row['body'] as String,
               sentAt:
                   DateTime.fromMillisecondsSinceEpoch(row['sent_at'] as int),
+              status: MessageStatus.fromDb(
+                  row['status'] as String? ?? 'sent'),
             ))
         .toList();
   }
