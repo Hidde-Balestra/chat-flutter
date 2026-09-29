@@ -20,9 +20,13 @@ class HttpChatBackendException implements Exception {
 /// bearer token obtained from [verifyAuthChallenge] in memory and attaches
 /// it to every authenticated call automatically.
 class HttpChatBackend implements ChatBackend {
-  HttpChatBackend({required Uri baseUrl, http.Client? client})
+  /// [client] has no default on purpose: this app has no non-Tor networking
+  /// path, so silently falling back to a plain [http.Client] here would be
+  /// a privacy leak, not just a convenience. Every call site — production
+  /// wiring and tests alike — must say explicitly what it's passing.
+  HttpChatBackend({required Uri baseUrl, required http.Client client})
       : _baseUrl = baseUrl,
-        _client = client ?? http.Client();
+        _client = client;
 
   /// Must end with a trailing slash, e.g. `https://chat.example.com/`.
   final Uri _baseUrl;
