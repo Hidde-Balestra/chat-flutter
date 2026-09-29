@@ -74,8 +74,7 @@ class HttpChatBackend implements ChatBackend {
     });
   }
 
-  Future<Map<String, dynamic>> _get(String path,
-      {bool authenticated = false}) {
+  Future<Map<String, dynamic>> _get(String path, {bool authenticated = false}) {
     return _resilient(() async {
       final response = await _client.get(_uri(path),
           headers: _headers(authenticated: authenticated));

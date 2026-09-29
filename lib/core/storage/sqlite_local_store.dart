@@ -152,8 +152,7 @@ class SqliteLocalStore implements LocalStore {
               body: row['body'] as String,
               sentAt:
                   DateTime.fromMillisecondsSinceEpoch(row['sent_at'] as int),
-              status: MessageStatus.fromDb(
-                  row['status'] as String? ?? 'sent'),
+              status: MessageStatus.fromDb(row['status'] as String? ?? 'sent'),
             ))
         .toList();
   }

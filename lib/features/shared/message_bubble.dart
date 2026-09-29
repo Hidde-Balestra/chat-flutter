@@ -97,7 +97,8 @@ class _StatusIndicator extends StatelessWidget {
         );
       case MessageStatus.sent:
         return Icon(Icons.done,
-            size: 14, color: colorScheme.onPrimaryContainer.withValues(alpha: 0.6));
+            size: 14,
+            color: colorScheme.onPrimaryContainer.withValues(alpha: 0.6));
       case MessageStatus.failed:
         return Row(
           mainAxisSize: MainAxisSize.min,
