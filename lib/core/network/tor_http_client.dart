@@ -42,6 +42,18 @@ class TorHttpClient extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     final client = await _client();
-    return client.send(request).timeout(_requestTimeout);
+    try {
+      return await client.send(request).timeout(_requestTimeout);
+    } catch (_) {
+      // A malformed/unsolicited response or a stalled circuit can desync
+      // the underlying connection, poisoning every later request on it
+      // even once the server or circuit recovers. Dropping [_inner] here
+      // means the next call goes through [_client] again and opens a
+      // fresh connection — still via the same local SOCKS5 port, so still
+      // fully Tor-routed, just not on the possibly-poisoned socket.
+      _inner?.close();
+      _inner = null;
+      rethrow;
+    }
   }
 }

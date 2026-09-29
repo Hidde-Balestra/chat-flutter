@@ -26,7 +26,7 @@ class HttpChatBackend implements ChatBackend {
 
   /// Must end with a trailing slash, e.g. `https://chat.example.com/`.
   final Uri _baseUrl;
-  http.Client _client;
+  final http.Client _client;
   String? _bearerToken;
 
   Uri _uri(String path) => _baseUrl.resolve(path);
@@ -44,52 +44,32 @@ class HttpChatBackend implements ChatBackend {
     return headers;
   }
 
-  /// A malformed or unexpected response (e.g. a proxy/hosting error page
-  /// swapped in for a 500) can desync the persistent connection underneath
-  /// [_client], so every later request on it keeps failing even once the
-  /// server recovers. Recreating the client on such a failure drops that
-  /// connection instead of reusing a possibly-poisoned one.
-  ///
-  /// [HttpChatBackendException] is deliberately excluded: it means a
-  /// complete, well-formed HTTP response came back (just a 4xx/5xx one), so
-  /// the connection itself is fine. [_client] is shared by every concurrent
-  /// call, so closing it here too would abort any *other* request still
-  /// in flight on it — e.g. a validation error on one call corrupting an
-  /// unrelated call's in-progress request body into something the server
-  /// then fails to parse as JSON.
-  Future<T> _resilient<T>(Future<T> Function() action) async {
-    try {
-      return await action();
-    } on HttpChatBackendException {
-      rethrow;
-    } catch (_) {
-      _client.close();
-      _client = http.Client();
-      rethrow;
-    }
-  }
+  // A malformed or unexpected response (e.g. a proxy/hosting error page
+  // swapped in for a 500) can desync the persistent connection underneath
+  // [_client]. Recovering from that — dropping and recreating the
+  // connection, still routed through Tor — is [_client]'s own job (a
+  // [TorHttpClient] in production does this internally); it must never be
+  // done here by swapping in some other [http.Client], since a generic
+  // replacement wouldn't be Tor-routed at all.
 
   Future<Map<String, dynamic>> _post(
     String path,
     Map<String, dynamic> body, {
     bool authenticated = false,
-  }) {
-    return _resilient(() async {
-      final response = await _client.post(
-        _uri(path),
-        headers: _headers(authenticated: authenticated),
-        body: jsonEncode(body),
-      );
-      return _decode(response);
-    });
+  }) async {
+    final response = await _client.post(
+      _uri(path),
+      headers: _headers(authenticated: authenticated),
+      body: jsonEncode(body),
+    );
+    return _decode(response);
   }
 
-  Future<Map<String, dynamic>> _get(String path, {bool authenticated = false}) {
-    return _resilient(() async {
-      final response = await _client.get(_uri(path),
-          headers: _headers(authenticated: authenticated));
-      return _decode(response);
-    });
+  Future<Map<String, dynamic>> _get(String path,
+      {bool authenticated = false}) async {
+    final response = await _client.get(_uri(path),
+        headers: _headers(authenticated: authenticated));
+    return _decode(response);
   }
 
   Map<String, dynamic> _decode(http.Response response) {
