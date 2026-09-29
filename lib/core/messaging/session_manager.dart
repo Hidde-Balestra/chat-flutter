@@ -512,7 +512,16 @@ class SessionManager {
       toAck.add(envelope.envelopeId);
     }
 
-    await _backend.ackEnvelopes(toAck);
+    try {
+      await _backend.ackEnvelopes(toAck);
+    } catch (e) {
+      // toAck itself is logged too: this is the exact list the server
+      // rejected, so a shape/type problem in it (as opposed to a plain
+      // network failure) is visible right here instead of guessing from
+      // the server's error message alone.
+      debugPrint('privacychat: ackEnvelopes($toAck) failed: $e');
+      rethrow;
+    }
     return updatedConversations;
   }
 
