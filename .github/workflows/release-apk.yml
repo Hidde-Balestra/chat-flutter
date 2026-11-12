@@ -43,5 +43,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-release.apk
-          prerelease: true
+          # A tag with a "-" (e.g. v0.1.0-alpha.25) is a pre-release; a clean
+          # "vX.Y.Z" tag is a real release — so App Updater's own
+          # releases/latest check can find it without needing its
+          # "include pre-releases" option. For the `release: created`
+          # trigger (no tag ref to read), fall back to whatever prerelease
+          # flag was set when the release was created.
+          prerelease: ${{ github.event_name == 'release' && github.event.release.prerelease || contains(github.ref_name, '-') }}
           generate_release_notes: true
